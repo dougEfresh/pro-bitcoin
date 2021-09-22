@@ -73,6 +73,7 @@
 #include <stdio.h>
 #include <thread>
 #include <vector>
+#include <metrics/metrics.h>
 
 #ifndef WIN32
 #include <attributes.h>
@@ -451,6 +452,8 @@ void SetupServerArgs(ArgsManager& argsman)
     argsman.AddArg("-peertimeout=<n>", strprintf("Specify a p2p connection timeout delay in seconds. After connecting to a peer, wait this amount of time before considering disconnection based on inactivity (minimum: 1, default: %d)", DEFAULT_PEER_CONNECT_TIMEOUT), ArgsManager::ALLOW_ANY | ArgsManager::DEBUG_ONLY, OptionsCategory::CONNECTION);
     argsman.AddArg("-torcontrol=<ip>:<port>", strprintf("Tor control port to use if onion listening enabled (default: %s)", DEFAULT_TOR_CONTROL), ArgsManager::ALLOW_ANY, OptionsCategory::CONNECTION);
     argsman.AddArg("-torpassword=<pass>", "Tor control port password (default: empty)", ArgsManager::ALLOW_ANY | ArgsManager::SENSITIVE, OptionsCategory::CONNECTION);
+    argsman.AddArg("-metricsbind=<ip:port>", strprintf("Bind metrics endpoint to ip:port (default: %s)", "localhost:8335"), ArgsManager::ALLOW_ANY | ArgsManager::NETWORK_ONLY, OptionsCategory::CONNECTION);
+    argsman.AddArg("-metrics", strprintf("use metrics (default: 1)"), ArgsManager::ALLOW_ANY | ArgsManager::NETWORK_ONLY, OptionsCategory::OPTIONS);
 #ifdef USE_UPNP
 #if USE_UPNP
     argsman.AddArg("-upnp", "Use UPnP to map the listening port (default: 1 when listening and no -proxy)", ArgsManager::ALLOW_ANY, OptionsCategory::CONNECTION);
@@ -1085,6 +1088,21 @@ bool AppInitMain(NodeContext& node, interfaces::BlockAndHeaderTipInfo* tip_info)
                   args.GetArg("-datadir", ""), fs::current_path().string());
     }
 
+    // Metrics
+    auto metrics_endpoint = args.GetArg("-metricsbind", chainparams.IsTestChain() ? "localhost:18335": "localhost:8335");
+    auto use_metrics = args.GetBoolArg("-metrics", true);
+    if (!use_metrics) {
+        LogPrintf("Using noop Metrics\n");
+    }
+    try {
+        node.metricsContainer = metrics::Instance();
+    } catch(std::exception &e) {
+        LogPrintf("Metrics init error %s\n", metrics_endpoint, e.what());
+        return InitError(_("Metrics init error"));
+    }
+    metrics::Init(metrics_endpoint, chainparams.IsTestChain() ? "test": "main", !use_metrics);
+    LogPrintf("Bound metrics endpoint to %s/metrics\n", metrics_endpoint);
+    //
     InitSignatureCache();
     InitScriptExecutionCache();
 
@@ -1290,6 +1308,7 @@ bool AppInitMain(NodeContext& node, interfaces::BlockAndHeaderTipInfo* tip_info)
         LogPrintf("Using /16 prefix for IP bucketing\n");
     }
 
+    RegisterValidationInterface(node.metricsContainer->Notifier());
 #if ENABLE_ZMQ
     g_zmq_notification_interface = CZMQNotificationInterface::Create();
 
@@ -1334,6 +1353,51 @@ bool AppInitMain(NodeContext& node, interfaces::BlockAndHeaderTipInfo* tip_info)
     }
     LogPrintf("* Using %.1f MiB for chain state database\n", nCoinDBCache * (1.0 / 1024 / 1024));
     LogPrintf("* Using %.1f MiB for in-memory UTXO set (plus up to %.1f MiB of unused mempool space)\n", nCoinCacheUsage * (1.0 / 1024 / 1024), nMempoolSizeMax * (1.0 / 1024 / 1024));
+
+    auto configMetrics = node.metricsContainer->Config();
+    configMetrics.SetFlag("acceptnonstdtxn", args.GetBoolArg("-acceptnonstdtxn", !chainparams.RequireStandard()));
+    configMetrics.SetFlag("blocksonly", ignores_incoming_txs);
+    configMetrics.SetFlag("checkpoints", fCheckpointsEnabled);
+    configMetrics.SetFlag("checkblockindex", fCheckBlockIndex);
+    configMetrics.SetFlag("coinstatsindex", args.GetBoolArg("-coinstatsindex", DEFAULT_COINSTATSINDEX));
+    configMetrics.SetFlag("datacarrier", fAcceptDatacarrier);
+    configMetrics.SetFlag("discover", args.GetBoolArg("-discover", true));
+    configMetrics.SetFlag("dns", fNameLookup);
+    configMetrics.SetFlag("i2pacceptincoming", args.GetBoolArg("-i2pacceptincoming", true));
+    configMetrics.SetFlag("listen", fListen);
+    configMetrics.SetFlag("listenonion", args.GetBoolArg("-listenonion", DEFAULT_LISTEN_ONION));
+    configMetrics.SetFlag("peerbloomfilters", nLocalServices & NODE_BLOOM);
+    configMetrics.SetFlag("peerblockfilters", args.GetBoolArg("-peerblockfilters", DEFAULT_PEERBLOCKFILTERS));
+    configMetrics.SetFlag("permitbaremultisig", fIsBareMultisigStd);
+    configMetrics.SetFlag("persistmempool", args.GetBoolArg("-persistmempool", DEFAULT_PERSIST_MEMPOOL));
+    configMetrics.SetFlag("proxyrandomize", proxyRandomize);
+    configMetrics.SetFlag("prune", args.GetArg("-prune", 0));
+    configMetrics.SetFlag("reindex", fReindex);
+    configMetrics.SetFlag("reindex-chainstate", fReindexChainState);
+    configMetrics.SetFlag("rest", args.GetBoolArg("-rest", DEFAULT_REST_ENABLE));
+    configMetrics.SetFlag("server", args.GetBoolArg("-server", false));
+    configMetrics.SetFlag("sysperms",args.GetBoolArg("-sysperms", false));
+    configMetrics.SetFlag("txindex", args.GetBoolArg("-txindex", DEFAULT_TXINDEX));
+    configMetrics.SetFlag("upnp", args.GetBoolArg("-upnp", DEFAULT_UPNP));
+    configMetrics.SetFlag("natpmp", gArgs.GetBoolArg("-natpmp", DEFAULT_NATPMP));
+    configMetrics.SetFlag("whitelistforcerelay",args.GetBoolArg("-whitelistforcerelay", DEFAULT_WHITELISTFORCERELAY));
+
+    configMetrics.Set("datacarriersize", nMaxDatacarrierBytes);
+    configMetrics.Set("maxmempool", nMempoolSizeMax);
+    configMetrics.Set("maxorphantx", args.GetArg("-maxorphantx", DEFAULT_MAX_ORPHAN_TRANSACTIONS));
+    configMetrics.Set("dbcache", nTotalCache);
+    configMetrics.Set("chainstate-db", nCoinDBCache);
+    configMetrics.Set("txindex-cache", nTxIndexCache);
+    configMetrics.Set("peertimeout", peer_connect_timeout);
+    configMetrics.Set("timeout", nConnectTimeout);
+    configMetrics.Set("checkblocks", args.GetArg("-checkblocks", DEFAULT_CHECKBLOCKS));
+    configMetrics.Set("checklevel", args.GetArg("-checklevel", DEFAULT_CHECKLEVEL));
+    configMetrics.Set("checkmempool", check_ratio);
+    configMetrics.Set("maxsigcachesize", args.GetArg("-maxsigcachesizze", DEFAULT_MAX_SIG_CACHE_SIZE));
+    configMetrics.Set("maxtipage", nMaxTipAge);
+    configMetrics.Set("bantime", args.GetArg("-bantime", DEFAULT_MISBEHAVING_BANTIME));
+    configMetrics.Set("bytespersigop", nBytesPerSigOp);
+    configMetrics.Set("maxconnections", nMaxConnections);
 
     bool fLoaded = false;
     while (!fLoaded && !ShutdownRequested()) {

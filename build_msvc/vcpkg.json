@@ -14,6 +14,8 @@
       "name": "libevent",
       "features": ["thread"]
     },
-    "zeromq"
+    "zeromq",
+    "prometheus-cpp-core",
+    "prometheus-cpp-pull"
   ]
 }
