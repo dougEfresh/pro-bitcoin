@@ -80,7 +80,7 @@ static constexpr int DNSSEEDS_DELAY_PEER_THRESHOLD = 1000; // "many" vs "few" pe
 /** The default timeframe for -maxuploadtarget. 1 day. */
 static constexpr std::chrono::seconds MAX_UPLOAD_TIMEFRAME{60 * 60 * 24};
 
-const auto metricsContainer = metrics::Instance();
+static const auto& metricsContainer = metrics::Instance();
 
 // We add a random period time (0 to 1 seconds) to feeler connections to prevent synchronization.
 #define FEELER_SLEEP_WINDOW 1
@@ -630,7 +630,7 @@ void CNode::copyStats(CNodeStats &stats, const std::vector<bool> &m_asmap)
 
 bool CNode::ReceiveMsgBytes(Span<const uint8_t> msg_bytes, bool& complete)
 {
-    static auto netMetrics = metricsContainer->Net();
+    static auto& netMetrics = metricsContainer->Net();
     complete = false;
     const auto time = GetTime<std::chrono::microseconds>();
     LOCK(cs_vRecv);
@@ -2961,7 +2961,7 @@ bool CConnman::DisconnectNode(NodeId id)
 
 void CConnman::RecordBytesRecv(uint64_t bytes)
 {
-    static auto netMetrics = metricsContainer->Net();
+    static auto& netMetrics = metricsContainer->Net();
     LOCK(cs_totalBytesRecv);
     nTotalBytesRecv += bytes;
     netMetrics.BandwidthGauge(metrics::NetDirection::RX, "total", bytes);
@@ -2969,7 +2969,7 @@ void CConnman::RecordBytesRecv(uint64_t bytes)
 
 void CConnman::RecordBytesSent(uint64_t bytes)
 {
-    static auto netMetrics = metricsContainer->Net();
+    static auto& netMetrics = metricsContainer->Net();
     LOCK(cs_totalBytesSent);
     nTotalBytesSent += bytes;
 
@@ -3102,8 +3102,8 @@ bool CConnman::NodeFullyConnected(const CNode* pnode)
 
 void CConnman::PushMessage(CNode* pnode, CSerializedNetMsg&& msg)
 {
-    static auto netMetrics = metricsContainer->Net();
-    static auto peerMetrics = metricsContainer->Peer();
+    static auto& netMetrics = metricsContainer->Net();
+    static auto& peerMetrics = metricsContainer->Peer();
     size_t nMessageSize = msg.data.size();
     peerMetrics.PushMsgType(SanitizeString(msg.m_type));
     LogPrint(BCLog::NET, "sending %s (%d bytes) peer=%d\n",  SanitizeString(msg.m_type), nMessageSize, pnode->GetId());

@@ -12,7 +12,7 @@
 #include <util/translation.h>
 #include <metrics/metrics.h>
 
-const static auto& metricsContainer = metrics::Instance();
+static const auto& metricsContainer = metrics::Instance();
 
 BanMan::BanMan(fs::path ban_file, CClientUIInterface* client_interface, int64_t default_ban_time)
     : m_client_interface(client_interface), m_ban_db(std::move(ban_file)), m_default_ban_time(default_ban_time)

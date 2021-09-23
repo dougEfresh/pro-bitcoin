@@ -53,7 +53,7 @@
 
 #include <metrics/metrics.h>
 
-const auto metricsContainer = metrics::Instance();
+static const auto& metricsContainer = metrics::Instance();
 
 struct CUpdatedBlock
 {

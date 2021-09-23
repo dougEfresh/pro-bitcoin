@@ -165,7 +165,7 @@ static constexpr double MAX_ADDR_RATE_PER_SECOND{0.1};
  *  is exempt from this limit. */
 static constexpr size_t MAX_ADDR_PROCESSING_TOKEN_BUCKET{MAX_ADDR_TO_SEND};
 
-const auto metricsContainer = metrics::Instance();
+static const auto& metricsContainer = metrics::Instance();
 
 // Internal stuff
 namespace {

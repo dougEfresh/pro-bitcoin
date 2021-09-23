@@ -15,7 +15,7 @@ static constexpr int64_t ORPHAN_TX_EXPIRE_TIME = 20 * 60;
 /** Minimum time between orphan transactions expire time checks in seconds */
 static constexpr int64_t ORPHAN_TX_EXPIRE_INTERVAL = 5 * 60;
 
-static const auto metricsContainer = metrics::Instance();
+static const auto& metricsContainer = metrics::Instance();
 
 RecursiveMutex g_cs_orphans;
 

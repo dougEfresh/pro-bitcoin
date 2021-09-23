@@ -6,10 +6,7 @@
 
 #include <primitives/transaction.h>
 #include <consensus/validation.h>
-#include <metrics/metrics.h>
 #include <boost/thread.hpp>
-
-const auto metricsContainer = metrics::Instance();
 
 bool CheckTransaction(const CTransaction& tx, TxValidationState& state)
 {
