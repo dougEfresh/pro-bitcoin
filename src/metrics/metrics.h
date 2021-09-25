@@ -117,13 +117,13 @@ public:
     static std::unique_ptr<BlockMetrics> make(const std::string& chain, prometheus::Registry& registry, bool noop);
     //BlockMetrics() = default;
     virtual ~BlockMetrics(){};
-    virtual void Size(double amt){};
-    virtual void SizeWitness(double amt){};
-    virtual void Height(double amt){};
-    virtual void Weight(double amt){};
+    virtual void Size(size_t amt){};
+    virtual void SizeWitness(size_t amt){};
+    virtual void Height(int amt){};
+    virtual void Weight(size_t amt){};
     virtual void Version(double amt){};
-    virtual void Transactions(double amt){};
-    virtual void SigOps(double amt) {}
+    virtual void Transactions(size_t amt){};
+    virtual void SigOps(int64_t amt) {}
 
     virtual void TipLoadBlockDisk(int64_t current, double avg){};
     virtual void TipConnectBlock(int64_t current, double avg){};
@@ -143,13 +143,13 @@ protected:
 public:
     ~BlockMetricsImpl(){};
     explicit BlockMetricsImpl(const std::string& chain, prometheus::Registry& registry);
-    void Size(double amt) override;
-    void SizeWitness(double amt) override;
-    void Height(double amt) override;
-    void Weight(double amt) override;
+    void Size(size_t amt) override;
+    void SizeWitness(size_t amt) override;
+    void Height(int amt) override;
+    void Weight(size_t amt) override;
     void Version(double amt) override;
-    void Transactions(double amt) override;
-    void SigOps(double amt) override;
+    void Transactions(size_t amt) override;
+    void SigOps(int64_t amt) override;
 
     void TipLoadBlockDisk(int64_t current, double avg) override;
     void TipConnectBlock(int64_t current, double avg) override;

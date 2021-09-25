@@ -62,39 +62,39 @@ void BlockMetricsImpl::set(const std::string& type, double amt)
     found->second->Set(amt);
 }
 
-void BlockMetricsImpl::Size(double amt)
+void BlockMetricsImpl::Size(size_t amt)
 {
-    this->set("size", amt);
+    this->set("size", (double)amt);
 }
 
-void BlockMetricsImpl::SizeWitness(double amt)
+void BlockMetricsImpl::SizeWitness(size_t amt)
 {
-    this->set("size-witness", amt);
+    this->set("size-witness", (double)amt);
 }
 
-void BlockMetricsImpl::Height(double amt)
+void BlockMetricsImpl::Height(int amt)
 {
-    this->set("height", amt);
+    this->set("height", (double)amt);
 }
 
-void BlockMetricsImpl::Weight(double amt)
+void BlockMetricsImpl::Weight(size_t amt)
 {
-    this->set("weight", amt);
+    this->set("weight", (double)amt);
 }
 
 void BlockMetricsImpl::Version(double amt)
 {
-    this->set("version", amt);
+    this->set("version", (double)amt);
 }
 
-void BlockMetricsImpl::Transactions(double amt)
+void BlockMetricsImpl::Transactions(size_t amt)
 {
-    this->set("transactions", amt);
+    this->set("transactions", (double)amt);
 }
 
-void BlockMetricsImpl::SigOps(double amt)
+void BlockMetricsImpl::SigOps(int64_t amt)
 {
-    this->set("sigops", amt);
+    this->set("sigops", (double)amt);
 }
 
 void BlockMetricsImpl::TipLoadBlockDisk(int64_t current, double avg)

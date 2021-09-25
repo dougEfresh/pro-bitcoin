@@ -1705,7 +1705,6 @@ static int64_t nTimeForks = 0;
 static int64_t nTimeVerify = 0;
 static int64_t nTimeConnect = 0;
 static int64_t nTimeIndex = 0;
-static int64_t nTimeCallbacks = 0;
 static int64_t nTimeTotal = 0;
 static int64_t nBlocksTotal = 0;
 
@@ -2020,10 +2019,13 @@ bool CChainState::ConnectBlock(const CBlock& block, BlockValidationState& state,
     blockMetrics.UpdateIndex(nCurrentTime, nAvgTime);
     LogPrint(BCLog::BENCH, "    - Index writing: %.2fms [%.2fs (%.2fms/blk)]\n", MILLI * nCurrentTime, nTimeIndex * MICRO, nAvgTime * MILLI);
 
-    //TODO remove this
-    int64_t nTime6 = GetTimeMicros(); nTimeCallbacks += nTime6 - nTime5;
-    LogPrint(BCLog::BENCH, "    - Callbacks: %d [%.2fs (%.2fms/blk)]\n", (nTime6 - nTime5), nTimeCallbacks * MICRO, nTimeCallbacks * MILLI / nBlocksTotal);
-
+    if (!this->IsInitialBlockDownload()) {
+        //TODO move to MetricsNotificationInterface
+        blockMetrics.Size(::GetSerializeSize(block, PROTOCOL_VERSION | SERIALIZE_TRANSACTION_NO_WITNESS));
+        blockMetrics.SizeWitness(::GetSerializeSize(block, PROTOCOL_VERSION));
+        blockMetrics.SigOps(nSigOpsCost);
+        blockMetrics.Weight(::GetBlockWeight(block));
+    }
     return true;
 }
 

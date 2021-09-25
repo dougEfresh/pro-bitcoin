@@ -55,6 +55,8 @@ Family<Counter>& Metrics::FamilyCounter(const std::string& name, const std::map<
 
 ConfigMetrics::ConfigMetrics(const std::string& chain, prometheus::Registry& registry) : Metrics(chain, registry)
 {
+    auto now = std::time(nullptr);
+    FamilyGauge("bitcoin_boot_time").Add({}).Set((double)now);
     _config = &FamilyGauge("bitcoin_conf");
 }
 
