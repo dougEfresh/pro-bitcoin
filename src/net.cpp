@@ -2870,7 +2870,8 @@ void CConnman::RecordBytesSent(uint64_t bytes, bool increaseMaxOutbound)
     }
 
     // TODO, exclude peers with download permission
-    nMaxOutboundTotalBytesSentInCycle += bytes;
+    if (increaseMaxOutbound)
+        nMaxOutboundTotalBytesSentInCycle += bytes;
 }
 
 uint64_t CConnman::GetMaxOutboundTarget() const
@@ -3027,7 +3028,7 @@ void CConnman::PushMessage(CNode* pnode, CSerializedNetMsg&& msg)
         if (optimisticSend) nBytesSent = SocketSendData(*pnode);
     }
     if (nBytesSent) RecordBytesSent(nBytesSent, !pnode->HasPermission(NetPermissionFlags::Download));
-}
+    }
 
 bool CConnman::ForNode(NodeId id, std::function<bool(CNode* pnode)> func)
 {
