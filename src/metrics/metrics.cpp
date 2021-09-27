@@ -58,6 +58,7 @@ ConfigMetrics::ConfigMetrics(const std::string& chain, prometheus::Registry& reg
     auto now = std::time(nullptr);
     FamilyGauge("bitcoin_boot_time").Add({}).Set((double)now);
     _config = &FamilyGauge("bitcoin_conf");
+    _ibd = &FamilyGauge("initial_block_download").Add({});
 }
 
 void ConfigMetrics::Set(const std::string& cfg, int64_t value)
@@ -68,6 +69,11 @@ void ConfigMetrics::SetFlag(const std::string& cfg, bool value)
 {
     double flag = value ? 1.0 : 0.0;
     _config->Add({{"type", "bool"}, {"name", cfg}}).Set(flag);
+}
+void ConfigMetrics::SetIBD(const bool value)
+{
+    double flag = value ? 1.0 : 0.0;
+    _ibd->Set(flag);
 }
 
 PeerMetrics& Container::Peer()

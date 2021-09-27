@@ -1354,7 +1354,7 @@ bool AppInitMain(NodeContext& node, interfaces::BlockAndHeaderTipInfo* tip_info)
     LogPrintf("* Using %.1f MiB for chain state database\n", nCoinDBCache * (1.0 / 1024 / 1024));
     LogPrintf("* Using %.1f MiB for in-memory UTXO set (plus up to %.1f MiB of unused mempool space)\n", nCoinCacheUsage * (1.0 / 1024 / 1024), nMempoolSizeMax * (1.0 / 1024 / 1024));
 
-    auto configMetrics = node.metricsContainer->Config();
+    auto& configMetrics = node.metricsContainer->Config();
     configMetrics.SetFlag("acceptnonstdtxn", args.GetBoolArg("-acceptnonstdtxn", !chainparams.RequireStandard()));
     configMetrics.SetFlag("blocksonly", ignores_incoming_txs);
     configMetrics.SetFlag("checkpoints", fCheckpointsEnabled);
@@ -1363,6 +1363,8 @@ bool AppInitMain(NodeContext& node, interfaces::BlockAndHeaderTipInfo* tip_info)
     configMetrics.SetFlag("datacarrier", fAcceptDatacarrier);
     configMetrics.SetFlag("discover", args.GetBoolArg("-discover", true));
     configMetrics.SetFlag("dns", fNameLookup);
+    configMetrics.SetFlag("dnsseed", gArgs.GetBoolArg("-dnsseed", DEFAULT_DNSSEED));
+    configMetrics.SetFlag("fixedseeds", gArgs.GetBoolArg("-fixedseeds", DEFAULT_FIXEDSEEDS));
     configMetrics.SetFlag("i2pacceptincoming", args.GetBoolArg("-i2pacceptincoming", true));
     configMetrics.SetFlag("listen", fListen);
     configMetrics.SetFlag("listenonion", args.GetBoolArg("-listenonion", DEFAULT_LISTEN_ONION));
@@ -1381,6 +1383,8 @@ bool AppInitMain(NodeContext& node, interfaces::BlockAndHeaderTipInfo* tip_info)
     configMetrics.SetFlag("upnp", args.GetBoolArg("-upnp", DEFAULT_UPNP));
     configMetrics.SetFlag("natpmp", gArgs.GetBoolArg("-natpmp", DEFAULT_NATPMP));
     configMetrics.SetFlag("whitelistforcerelay",args.GetBoolArg("-whitelistforcerelay", DEFAULT_WHITELISTFORCERELAY));
+
+    configMetrics.SetIBD(true); // reset by CChainState::IsInitialBlockDownload()
 
     configMetrics.Set("datacarriersize", nMaxDatacarrierBytes);
     configMetrics.Set("maxmempool", nMempoolSizeMax);

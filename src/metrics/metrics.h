@@ -8,6 +8,7 @@
 #include <prometheus/registry.h>
 #include <prometheus/summary.h>
 #include <validationinterface.h>
+#include <net_permissions.h>
 
 namespace metrics {
 static auto prom_registry = std::make_shared<prometheus::Registry>(); // NOLINT(cert-err58-cpp)
@@ -90,11 +91,13 @@ class ConfigMetrics : Metrics
 {
 private:
     prometheus::Family<prometheus::Gauge>* _config;
+    prometheus::Gauge* _ibd;
 
 public:
     explicit ConfigMetrics(const std::string& chain, prometheus::Registry& registry);
     void Set(const std::string& cfg, int64_t value);
     void SetFlag(const std::string& cfg, bool value);
+    void SetIBD(const bool value);
 };
 
 class BlockMetrics
@@ -245,6 +248,7 @@ protected:
     prometheus::Gauge* _known_peers_gauge;
     prometheus::Gauge* _banned_gauge;
     prometheus::Summary* _send_msg_timer;
+    std::map<NetPermissionFlags, prometheus::Gauge*> _permission_gauge;
 
 public:
     static std::unique_ptr<PeerMetrics> make(const std::string& chain, prometheus::Registry& registry, bool noop);
@@ -253,6 +257,7 @@ public:
     virtual void IncDiscourage(){};
     virtual void IncMisbehaveAmount(int amt){};
     virtual void ConnectionType(int type, uint amt){};
+    virtual void Permission(NetPermissionFlags permission, uint amt){};
     virtual void Known(size_t amt){};
     virtual void SendMessageTime(long amt){};
     virtual void PushMsgType(const std::string& msg_type){};
@@ -271,6 +276,7 @@ public:
     void IncDiscourage() override;
     void IncMisbehaveAmount(int amt) override;
     void ConnectionType(int type, uint amt) override;
+    void Permission(NetPermissionFlags permission, uint amt) override;
     void Known(size_t amt) override;
     void SendMessageTime(long amt) override;
     void PushMsgType(const std::string& msg_type) override;

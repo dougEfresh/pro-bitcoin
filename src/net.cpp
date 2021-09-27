@@ -1303,6 +1303,8 @@ void CConnman::DisconnectNodes()
 
 void CConnman::NotifyNumConnectionsChanged()
 {
+    static auto& netMetrics = metricsContainer->Net();
+    static auto& peerMetrics = metricsContainer->Peer();
     size_t vNodesSize;
     {
         LOCK(cs_vNodes);
@@ -1330,6 +1332,16 @@ void CConnman::NotifyNumConnectionsChanged()
         uint nAddr{0};
         uint nIn{0};
 
+        uint pNone{0};
+        uint pBloom{0};
+        uint pRelay{0};
+        uint pForce{0};
+        uint pDownload{0};
+        uint pNoBan{0};
+        uint pMempool{0};
+        uint pAddr{0};
+        uint pImplicit{0};
+        uint pAll{0};
         for (CNode* pnode : vNodes)
         {
             if(pnode->fClient)
@@ -1348,6 +1360,27 @@ void CConnman::NotifyNumConnectionsChanged()
                 torNodes++;
             if(pnode->addr.IsI2P())
                 i2pNodes++;
+            
+            if (pnode->HasPermission(NetPermissionFlags::All)) {
+                pAll++;
+            } else {
+                if (pnode->HasPermission(NetPermissionFlags::None))
+                    pNone++;
+                if (pnode->HasPermission(NetPermissionFlags::BloomFilter))
+                    pBloom++;
+                if (pnode->HasPermission(NetPermissionFlags::Relay))
+                    pRelay++;
+                if (pnode->HasPermission(NetPermissionFlags::ForceRelay))
+                    pForce++;
+                if (pnode->HasPermission(NetPermissionFlags::Download))
+                    pDownload++;
+                if (pnode->HasPermission(NetPermissionFlags::Mempool))
+                    pMempool++;
+                if (pnode->HasPermission(NetPermissionFlags::Addr))
+                    pAddr++;
+                if (pnode->HasPermission(NetPermissionFlags::Implicit))
+                    pImplicit++;
+            }
 
             switch (pnode->m_conn_type) {
                 case ConnectionType::BLOCK_RELAY:
@@ -1369,24 +1402,34 @@ void CConnman::NotifyNumConnectionsChanged()
                     nIn++;
                     break;
             }
-//            if(pnode->nPingUsecTime > 0)
-//                statsClient.timing("peers.ping_us", pnode->nPingUsecTime, 1.0f);
         }
-        metricsContainer->Net().ConnectionGauge(metrics::NetConnectionType::TOTAL, nPrevNodeCount);
-        metricsContainer->Net().ConnectionGauge(metrics::NetConnectionType::SPV, spvNodes);
-        metricsContainer->Net().ConnectionGauge(metrics::NetConnectionType::FULL, fullNodes);
-        metricsContainer->Net().ConnectionGauge(metrics::NetConnectionType::INBOUND, inboundNodes);
-        metricsContainer->Net().ConnectionGauge(metrics::NetConnectionType::OUTBOUND, outboundNodes);
-        metricsContainer->Net().ConnectionGauge(metrics::NetConnectionType::IPV4, ipv4Nodes);
-        metricsContainer->Net().ConnectionGauge(metrics::NetConnectionType::IPV6, ipv6Nodes);
-        metricsContainer->Net().ConnectionGauge(metrics::NetConnectionType::TOR, torNodes);
-        metricsContainer->Net().ConnectionGauge(metrics::NetConnectionType::I2P, i2pNodes);
-        metricsContainer->Peer().ConnectionType(static_cast<int>(ConnectionType::ADDR_FETCH), nAddr);
-        metricsContainer->Peer().ConnectionType(static_cast<int>(ConnectionType::BLOCK_RELAY), nblockRelay);
-        metricsContainer->Peer().ConnectionType(static_cast<int>(ConnectionType::FEELER), nFeeler);
-        metricsContainer->Peer().ConnectionType(static_cast<int>(ConnectionType::INBOUND), nIn);
-        metricsContainer->Peer().ConnectionType(static_cast<int>(ConnectionType::MANUAL), nManual);
-        metricsContainer->Peer().ConnectionType(static_cast<int>(ConnectionType::OUTBOUND_FULL_RELAY), nRelay);
+        netMetrics.ConnectionGauge(metrics::NetConnectionType::TOTAL, nPrevNodeCount);
+        netMetrics.ConnectionGauge(metrics::NetConnectionType::SPV, spvNodes);
+        netMetrics.ConnectionGauge(metrics::NetConnectionType::FULL, fullNodes);
+        netMetrics.ConnectionGauge(metrics::NetConnectionType::INBOUND, inboundNodes);
+        netMetrics.ConnectionGauge(metrics::NetConnectionType::OUTBOUND, outboundNodes);
+        netMetrics.ConnectionGauge(metrics::NetConnectionType::IPV4, ipv4Nodes);
+        netMetrics.ConnectionGauge(metrics::NetConnectionType::IPV6, ipv6Nodes);
+        netMetrics.ConnectionGauge(metrics::NetConnectionType::TOR, torNodes);
+        netMetrics.ConnectionGauge(metrics::NetConnectionType::I2P, i2pNodes);
+
+        peerMetrics.Permission(NetPermissionFlags::All, pAll);
+        peerMetrics.Permission(NetPermissionFlags::Implicit, pImplicit);
+        peerMetrics.Permission(NetPermissionFlags::Addr, pAddr);
+        peerMetrics.Permission(NetPermissionFlags::Mempool, pMempool);
+        peerMetrics.Permission(NetPermissionFlags::NoBan, pNoBan);
+        peerMetrics.Permission(NetPermissionFlags::Download, pDownload);
+        peerMetrics.Permission(NetPermissionFlags::ForceRelay, pForce);
+        peerMetrics.Permission(NetPermissionFlags::Relay, pRelay);
+        peerMetrics.Permission(NetPermissionFlags::BloomFilter, pBloom);
+        peerMetrics.Permission(NetPermissionFlags::None, pNone);
+
+        peerMetrics.ConnectionType(static_cast<int>(ConnectionType::ADDR_FETCH), nAddr);
+        peerMetrics.ConnectionType(static_cast<int>(ConnectionType::BLOCK_RELAY), nblockRelay);
+        peerMetrics.ConnectionType(static_cast<int>(ConnectionType::FEELER), nFeeler);
+        peerMetrics.ConnectionType(static_cast<int>(ConnectionType::INBOUND), nIn);
+        peerMetrics.ConnectionType(static_cast<int>(ConnectionType::MANUAL), nManual);
+        peerMetrics.ConnectionType(static_cast<int>(ConnectionType::OUTBOUND_FULL_RELAY), nRelay);
     }
 }
 
