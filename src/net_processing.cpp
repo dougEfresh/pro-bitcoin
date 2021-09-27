@@ -1289,7 +1289,7 @@ void PeerManagerImpl::Misbehaving(const NodeId pnode, const int howmuch, const s
     const std::string message_prefixed = message.empty() ? "" : (": " + message);
     if (peer->m_misbehavior_score >= DISCOURAGEMENT_THRESHOLD && peer->m_misbehavior_score - howmuch < DISCOURAGEMENT_THRESHOLD) {
         LogPrint(BCLog::NET, "Misbehaving: peer=%d (%d -> %d) DISCOURAGE THRESHOLD EXCEEDED%s\n", pnode, peer->m_misbehavior_score - howmuch, peer->m_misbehavior_score, message_prefixed);
-        metricsContainer->Peer().IncMisbehaving();
+        metricsContainer->Peer().IncDiscourage();
         peer->m_should_discourage = true;
     } else {
         LogPrint(BCLog::NET, "Misbehaving: peer=%d (%d -> %d)%s\n", pnode, peer->m_misbehavior_score - howmuch, peer->m_misbehavior_score, message_prefixed);

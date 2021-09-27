@@ -17,8 +17,8 @@ PeerMetricsImpl::PeerMetricsImpl(const std::string& chain, prometheus::Registry&
     auto& netMsgTypeFamily = FamilyHistory("peer_process", {{"method", "PeerManagerImpl::ProcessMessage"}});
     auto& txValidationFamily = FamilyCounter("peer_validation_result");
     auto& pushMsgTypeFamily = FamilyCounter("peer_send", {{"method", "CConnman::PushMessage"}});
-    _bad_peer_counter = &FamilyCounter("peer_bad").Add({});
-    _misbehave_counter = &FamilyCounter("peer_misbehave").Add({});
+    _bad_peer_counter = &FamilyCounter("peers_discourage").Add({});
+    _misbehave_counter = &FamilyCounter("peers_misbehave").Add({});
 
     _tx_validations = {
         &txValidationFamily.Add({{"result", "unset"}}),
@@ -37,6 +37,7 @@ PeerMetricsImpl::PeerMetricsImpl(const std::string& chain, prometheus::Registry&
         5000,
         10000,
         20000,
+        40000,
     };
     for (const std::string& msg : getAllNetMessageTypes()) {
         _process_msg_timer.insert({msg, &netMsgTypeFamily.Add({{"type", msg}}, buckets)});
@@ -80,7 +81,7 @@ void PeerMetricsImpl::IncMisbehaveAmount(int amt)
     _misbehave_counter->Increment((double)amt);
 }
 
-void PeerMetricsImpl::IncMisbehaving()
+void PeerMetricsImpl::IncDiscourage()
 {
     _bad_peer_counter->Increment();
 }

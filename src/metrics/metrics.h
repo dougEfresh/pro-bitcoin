@@ -250,7 +250,7 @@ public:
     static std::unique_ptr<PeerMetrics> make(const std::string& chain, prometheus::Registry& registry, bool noop);
     virtual void ProcessMsgType(const std::string& msg_type, long amt){};
     virtual void IncTxValidationResult(int state){};
-    virtual void IncMisbehaving(){};
+    virtual void IncDiscourage(){};
     virtual void IncMisbehaveAmount(int amt){};
     virtual void ConnectionType(int type, uint amt){};
     virtual void Known(size_t amt){};
@@ -268,7 +268,7 @@ public:
     explicit PeerMetricsImpl(const std::string& chain, prometheus::Registry& registry);
     void ProcessMsgType(const std::string& msg_type, long amt) override;
     void IncTxValidationResult(int state) override;
-    void IncMisbehaving() override;
+    void IncDiscourage() override;
     void IncMisbehaveAmount(int amt) override;
     void ConnectionType(int type, uint amt) override;
     void Known(size_t amt) override;
