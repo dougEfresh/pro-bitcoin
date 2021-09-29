@@ -3015,17 +3015,19 @@ void CConnman::RecordBytesSent(uint64_t bytes)
     static auto& netMetrics = metricsContainer->Net();
     LOCK(cs_totalBytesSent);
     nTotalBytesSent += bytes;
-
-    const auto now = GetTime<std::chrono::seconds>();
-    if (nMaxOutboundCycleStartTime + MAX_UPLOAD_TIMEFRAME < now)
-    {
-        // timeframe expired, reset cycle
-        nMaxOutboundCycleStartTime = now;
-        nMaxOutboundTotalBytesSentInCycle = 0;
-    }
     netMetrics.BandwidthGauge(metrics::NetDirection::TX, "total", bytes);
-    // TODO, exclude peers with download permission
-    nMaxOutboundTotalBytesSentInCycle += bytes;
+    if (nMaxOutboundLimit) {
+        const auto now = GetTime<std::chrono::seconds>();
+        if (nMaxOutboundCycleStartTime + MAX_UPLOAD_TIMEFRAME < now)
+        {
+            // timeframe expired, reset cycle
+            nMaxOutboundCycleStartTime = now;
+            netMetrics.MaxOutboundStartTime(now.count());
+            nMaxOutboundTotalBytesSentInCycle = 0;
+        }
+        nMaxOutboundTotalBytesSentInCycle += bytes;
+        netMetrics.MaxOutbound(nMaxOutboundTotalBytesSentInCycle);
+    }
 }
 
 uint64_t CConnman::GetMaxOutboundTarget() const

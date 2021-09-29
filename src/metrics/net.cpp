@@ -40,6 +40,11 @@ NetMetricsImpl::NetMetricsImpl(const std::string& chain, prometheus::Registry& r
         {"accept", &family_connection_counter.Add({{"type", "accept"}})},
         {"close", &family_connection_counter.Add({{"type", "close"}})},
     };
+    auto& maxFamily = FamilyGauge("net_max_outbound");
+    _max_outbound_gauge = &maxFamily.Add({{"type", "bytes"}});
+    _max_outbound_start_gauge = &maxFamily.Add({{"type", "epoch"}});
+    auto now = std::time(nullptr);
+    _max_outbound_start_gauge->Set((double)now);
 }
 
 void NetMetricsImpl::initBandwidth()
@@ -102,5 +107,12 @@ void NetMetricsImpl::IncConnection(const std::string& type)
         return;
     }
     found->second->Increment();
+}
+
+void NetMetricsImpl::MaxOutbound(int64_t amt) {
+    _max_outbound_gauge->Set((double)amt);
+}
+void NetMetricsImpl::MaxOutboundStartTime(int64_t amt) {
+    _max_outbound_start_gauge->Set((double)amt);
 }
 } // namespace metrics

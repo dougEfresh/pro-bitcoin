@@ -212,6 +212,8 @@ protected:
     prometheus::Summary* _ping_timer;
     prometheus::Counter* _ping_problem_counter;
     std::map<const std::string, prometheus::Counter*> _connection_counter;
+    prometheus::Gauge* _max_outbound_gauge;
+    prometheus::Gauge* _max_outbound_start_gauge;
 
 public:
     static std::unique_ptr<NetMetrics> make(const std::string& chain, prometheus::Registry& registry, bool noop);
@@ -220,6 +222,8 @@ public:
     virtual void BandwidthGauge(NetDirection direction, const std::string& msg, uint64_t amt){};
     virtual void PingTime(long amt){};
     virtual void IncPingProblem(){};
+    virtual void MaxOutbound(int64_t amt){};
+    virtual void MaxOutboundStartTime(int64_t amt){};
 };
 class NetMetricsImpl : NetMetrics, Metrics
 {
@@ -234,6 +238,8 @@ public:
     void BandwidthGauge(NetDirection direction, const std::string& msg, uint64_t amt) override;
     void PingTime(long amt) override;
     void IncPingProblem() override;
+    void MaxOutbound(int64_t amt) override;
+    void MaxOutboundStartTime(int64_t amt) override;
 };
 
 class PeerMetrics

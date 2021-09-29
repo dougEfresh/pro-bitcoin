@@ -1764,6 +1764,10 @@ bool AppInitMain(NodeContext& node, interfaces::BlockAndHeaderTipInfo* tip_info)
     connOptions.nMaxOutboundLimit = 1024 * 1024 * args.GetArg("-maxuploadtarget", DEFAULT_MAX_UPLOAD_TARGET);
     connOptions.m_peer_connect_timeout = peer_connect_timeout;
 
+    configMetrics.Set("maxuploadtarget", connOptions.nMaxOutboundLimit);
+    configMetrics.Set("maxsendbuffer", connOptions.nSendBufferMaxSize);
+    configMetrics.Set("maxreceivebuffer", connOptions.nReceiveFloodSize);
+
     for (const std::string& bind_arg : args.GetArgs("-bind")) {
         CService bind_addr;
         const size_t index = bind_arg.rfind('=');
