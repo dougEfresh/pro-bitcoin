@@ -111,6 +111,8 @@ protected:
         "version",
         "transactions",
         "sigops",
+        "time",
+        "header-time",
     };
     std::map<const std::string, prometheus::Gauge*> _block_tip_gauge;
     std::vector<prometheus::Histogram*> _block_bucket_timers;
@@ -127,6 +129,7 @@ public:
     virtual void Version(double amt){};
     virtual void Transactions(size_t amt){};
     virtual void SigOps(int64_t amt) {}
+    virtual void HeaderTime(int64_t amt) {}
 
     virtual void TipLoadBlockDisk(int64_t current, double avg){};
     virtual void TipConnectBlock(int64_t current, double avg){};
@@ -153,6 +156,7 @@ public:
     void Version(double amt) override;
     void Transactions(size_t amt) override;
     void SigOps(int64_t amt) override;
+    void HeaderTime(int64_t amt) override;
 
     void TipLoadBlockDisk(int64_t current, double avg) override;
     void TipConnectBlock(int64_t current, double avg) override;

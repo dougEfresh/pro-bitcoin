@@ -157,6 +157,7 @@ void MetricsNotificationsInterface::UpdatedBlockTip(const CBlockIndex* pindexNew
     }
     _blockMetrics.Transactions(pindexNew->nTx);
     _blockMetrics.Height(pindexNew->nHeight);
+    _blockMetrics.HeaderTime(pindexNew->GetBlockHeader().GetBlockTime());
 }
 
 void MetricsNotificationsInterface::TransactionAddedToMempool(const CTransactionRef& tx, uint64_t mempool_sequence)

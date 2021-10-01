@@ -90,11 +90,18 @@ void BlockMetricsImpl::Version(double amt)
 void BlockMetricsImpl::Transactions(size_t amt)
 {
     this->set("transactions", (double)amt);
+    auto now = std::time(nullptr);
+    this->set("time", (double)now);
 }
 
 void BlockMetricsImpl::SigOps(int64_t amt)
 {
     this->set("sigops", (double)amt);
+}
+
+void BlockMetricsImpl::HeaderTime(int64_t amt)
+{
+    this->set("header-time", (double)amt);
 }
 
 void BlockMetricsImpl::TipLoadBlockDisk(int64_t current, double avg)
