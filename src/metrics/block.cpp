@@ -104,6 +104,16 @@ void BlockMetricsImpl::HeaderTime(int64_t amt)
     this->set("header-time", (double)amt);
 }
 
+void BlockMetricsImpl::Reward(int64_t amt)
+{
+    this->set("reward", (double)amt);
+}
+
+void BlockMetricsImpl::Fees(int64_t amt)
+{
+    this->set("fees", (double)amt);
+}
+
 void BlockMetricsImpl::TipLoadBlockDisk(int64_t current, double avg)
 {
     _block_avg[P_BLK_LOAD]->Set(avg);

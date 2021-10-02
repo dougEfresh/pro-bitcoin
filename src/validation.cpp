@@ -2026,6 +2026,8 @@ bool CChainState::ConnectBlock(const CBlock& block, BlockValidationState& state,
         blockMetrics.SizeWitness(::GetSerializeSize(block, PROTOCOL_VERSION));
         blockMetrics.SigOps(nSigOpsCost);
         blockMetrics.Weight(::GetBlockWeight(block));
+        blockMetrics.Fees(nFees);
+        blockMetrics.Reward(blockReward);
     }
     return true;
 }
