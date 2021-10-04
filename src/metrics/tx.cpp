@@ -17,7 +17,7 @@ TxMetricsImpl::TxMetricsImpl(const std::string& chain, prometheus::Registry& reg
     auto& check_bucket_family = FamilyHistory("transactions_check");
     auto& check_avg_family = FamilyGauge("transactions_check_avg");
 
-    _check_buckets = &check_bucket_family.Add({{"method", "ConnectBlock"}}, prometheus::Histogram::BucketBoundaries{300, 600, 900, 1200});
+    _check_buckets = &check_bucket_family.Add({{"method", "ConnectBlock"}}, prometheus::Histogram::BucketBoundaries{500000, 1000000, 2000000, 4000000, 8000000});
     _check_avg = &check_avg_family.Add({{"method", "ConnectBlock"}});
     auto quantiles = prometheus::Summary::Quantiles{
         {0.50, 0.001},

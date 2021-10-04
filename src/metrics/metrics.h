@@ -9,6 +9,7 @@
 #include <prometheus/summary.h>
 #include <validationinterface.h>
 #include <net_permissions.h>
+#include <util/system.h>
 
 namespace metrics {
 static auto prom_registry = std::make_shared<prometheus::Registry>(); // NOLINT(cert-err58-cpp)
@@ -79,24 +80,58 @@ struct BlockTimerOp {
     prometheus::Histogram::BucketBoundaries _buckets;
 };
 
-static BlockTimerOp BLOCK_LOAD = BlockTimerOp("load", prometheus::Histogram::BucketBoundaries{5, 10, 25, 100});
-static BlockTimerOp BLOCK_CONNECT = BlockTimerOp("connect", prometheus::Histogram::BucketBoundaries{500, 1000, 1500, 3000});
+static BlockTimerOp BLOCK_LOAD = BlockTimerOp("load", prometheus::Histogram::BucketBoundaries{500,5000,50000,100000});
+static BlockTimerOp BLOCK_CONNECT = BlockTimerOp("connect", prometheus::Histogram::BucketBoundaries{500000, 1000000, 2000000, 4000000, 8000000});
 static BlockTimerOp BLOCK_FLUSH_VIEW = BlockTimerOp("flush-view", prometheus::Histogram::BucketBoundaries{100, 200, 500, 1000});
 static BlockTimerOp BLOCK_FLUSH_DISK = BlockTimerOp("flush-disk", prometheus::Histogram::BucketBoundaries{10, 25, 75, 100});
 static BlockTimerOp BLOCK_UPDATE_TIP = BlockTimerOp("update-tip", prometheus::Histogram::BucketBoundaries{25, 75, 100, 200});
-static BlockTimerOp BLOCK_FORK_CHK = BlockTimerOp("fork-check", prometheus::Histogram::BucketBoundaries{5, 10, 25, 50});
-static BlockTimerOp BLOCK_UPDATE_INDEX = BlockTimerOp("update-index", prometheus::Histogram::BucketBoundaries{5, 10, 25, 50});
+static BlockTimerOp BLOCK_FORK_CHK = BlockTimerOp("fork-check", prometheus::Histogram::BucketBoundaries{10000, 50000, 100000, 200000});
+static BlockTimerOp BLOCK_UPDATE_INDEX = BlockTimerOp("update-index", prometheus::Histogram::BucketBoundaries{5000, 10000, 15000, 20000});
 
 class ConfigMetrics : Metrics
 {
 private:
     prometheus::Family<prometheus::Gauge>* _config;
     prometheus::Gauge* _ibd;
-
+    static std::string CategoryToString(const OptionsCategory category)
+    {
+        switch (category) {
+        case OptionsCategory::OPTIONS:
+            return "options";
+            break;
+        case OptionsCategory::CONNECTION:
+            return "connection";
+            break;
+        case OptionsCategory::DEBUG_TEST:
+            return "debug";
+            break;
+        case OptionsCategory::NODE_RELAY:
+            return "node-relay";
+            break;
+        case OptionsCategory::BLOCK_CREATION:
+            return "block";
+            break;
+        case OptionsCategory::RPC:
+            return "rpc";
+            break;
+        case OptionsCategory::CHAINPARAMS:
+            return "chain";
+            break;
+        case OptionsCategory::COMMANDS:
+            return "commands";
+            break;
+        case OptionsCategory::REGISTER_COMMANDS:
+            return "register";
+            break;
+        default:
+            return "unknown";
+            break;
+        }
+    }
 public:
     explicit ConfigMetrics(const std::string& chain, prometheus::Registry& registry);
-    void Set(const std::string& cfg, int64_t value);
-    void SetFlag(const std::string& cfg, bool value);
+    void Set(const std::string& cfg, const OptionsCategory category, int64_t value);
+    void SetFlag(const std::string& cfg, const OptionsCategory category, bool value);
     void SetIBD(const bool value);
 };
 
@@ -114,12 +149,12 @@ protected:
         "time",
         "header-time",
         "fees",
-        "reward"
+        "reward",
+        "difficulty"
     };
     std::map<const std::string, prometheus::Gauge*> _block_tip_gauge;
     std::vector<prometheus::Histogram*> _block_bucket_timers;
     std::vector<prometheus::Gauge*> _block_avg;
-
 public:
     static std::unique_ptr<BlockMetrics> make(const std::string& chain, prometheus::Registry& registry, bool noop);
     //BlockMetrics() = default;
@@ -134,6 +169,7 @@ public:
     virtual void HeaderTime(int64_t amt) {}
     virtual void Reward(int64_t amt) {};
     virtual void Fees(int64_t amt) {};
+    virtual void Difficulty(double amt) {};
 
     virtual void TipLoadBlockDisk(int64_t current, double avg){};
     virtual void TipConnectBlock(int64_t current, double avg){};
@@ -163,6 +199,7 @@ public:
     void HeaderTime(int64_t amt) override;
     void Reward(int64_t amt) override;
     void Fees(int64_t amt) override;
+    void Difficulty(double amt) override;
 
     void TipLoadBlockDisk(int64_t current, double avg) override;
     void TipConnectBlock(int64_t current, double avg) override;

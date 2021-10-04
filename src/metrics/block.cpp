@@ -114,6 +114,11 @@ void BlockMetricsImpl::Fees(int64_t amt)
     this->set("fees", (double)amt);
 }
 
+void BlockMetricsImpl::Difficulty(double amt)
+{
+    this->set("difficulty", amt);
+}
+
 void BlockMetricsImpl::TipLoadBlockDisk(int64_t current, double avg)
 {
     _block_avg[P_BLK_LOAD]->Set(avg);

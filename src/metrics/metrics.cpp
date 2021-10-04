@@ -4,6 +4,7 @@
 #include <metrics/metrics.h>
 #include <protocol.h>
 #include <utility>
+#include <rpc/blockchain.h>
 
 namespace metrics {
 using namespace prometheus;
@@ -61,14 +62,14 @@ ConfigMetrics::ConfigMetrics(const std::string& chain, prometheus::Registry& reg
     _ibd = &FamilyGauge("initial_block_download").Add({});
 }
 
-void ConfigMetrics::Set(const std::string& cfg, int64_t value)
+void ConfigMetrics::Set(const std::string& cfg, const OptionsCategory category, int64_t value)
 {
-    _config->Add({{"type", "int"}, {"name", cfg}}).Set((double)value);
+    _config->Add({{"type", "int"}, {"name", cfg}, {"category", CategoryToString(category)}}).Set((double)value);
 }
-void ConfigMetrics::SetFlag(const std::string& cfg, bool value)
+void ConfigMetrics::SetFlag(const std::string& cfg, const OptionsCategory category,  bool value)
 {
     double flag = value ? 1.0 : 0.0;
-    _config->Add({{"type", "bool"}, {"name", cfg}}).Set(flag);
+    _config->Add({{"type", "bool"}, {"name", cfg}, {"category", CategoryToString(category)}}).Set(flag);
 }
 void ConfigMetrics::SetIBD(const bool value)
 {
@@ -159,6 +160,7 @@ void MetricsNotificationsInterface::UpdatedBlockTip(const CBlockIndex* pindexNew
     _blockMetrics.Height(pindexNew->nHeight);
     _blockMetrics.HeaderTime(pindexNew->GetBlockHeader().GetBlockTime());
     _blockMetrics.Version(pindexNew->nVersion);
+    _blockMetrics.Difficulty(GetDifficulty(pindexNew));
 }
 
 void MetricsNotificationsInterface::TransactionAddedToMempool(const CTransactionRef& tx, uint64_t mempool_sequence)
