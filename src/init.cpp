@@ -1380,7 +1380,6 @@ bool AppInitMain(NodeContext& node, interfaces::BlockAndHeaderTipInfo* tip_info)
     configMetrics.SetFlag("permitbaremultisig",  OptionsCategory::CONNECTION, fIsBareMultisigStd);
     configMetrics.SetFlag("persistmempool", OptionsCategory::OPTIONS,  args.GetBoolArg("-persistmempool", DEFAULT_PERSIST_MEMPOOL));
     configMetrics.SetFlag("proxyrandomize", OptionsCategory::CONNECTION, proxyRandomize);
-    configMetrics.SetFlag("prune", OptionsCategory::OPTIONS,  args.GetArg("-prune", 0));
     configMetrics.SetFlag("reindex", OptionsCategory::OPTIONS, fReindex);
     configMetrics.SetFlag("reindex-chainstate", OptionsCategory::OPTIONS, fReindexChainState);
     configMetrics.SetFlag("rest", OptionsCategory::RPC, args.GetBoolArg("-rest", DEFAULT_REST_ENABLE));
@@ -1399,7 +1398,7 @@ bool AppInitMain(NodeContext& node, interfaces::BlockAndHeaderTipInfo* tip_info)
 
     configMetrics.Set("bantime", OptionsCategory::CONNECTION, args.GetArg("-bantime", DEFAULT_MISBEHAVING_BANTIME));
     configMetrics.Set("blockmaxweight", OptionsCategory::BLOCK_CREATION, args.GetArg("-blockmaxweight", DEFAULT_BLOCK_MAX_WEIGHT));
-    configMetrics.Set("blockmaxweight", OptionsCategory::BLOCK_CREATION, args.GetArg("-blockmintxfee", DEFAULT_BLOCK_MIN_TX_FEE));
+    configMetrics.Set("blockmintxfee", OptionsCategory::BLOCK_CREATION, args.GetArg("-blockmintxfee", DEFAULT_BLOCK_MIN_TX_FEE));
     configMetrics.Set("bytespersigop", OptionsCategory::NODE_RELAY, nBytesPerSigOp);
     configMetrics.Set("checkblocks", OptionsCategory::DEBUG_TEST, args.GetArg("-checkblocks", DEFAULT_CHECKBLOCKS));
     configMetrics.Set("checklevel", OptionsCategory::DEBUG_TEST, args.GetArg("-checklevel", DEFAULT_CHECKLEVEL));
