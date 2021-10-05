@@ -62,9 +62,9 @@ ConfigMetrics::ConfigMetrics(const std::string& chain, prometheus::Registry& reg
     _ibd = &FamilyGauge("initial_block_download").Add({});
 }
 
-void ConfigMetrics::Set(const std::string& cfg, const OptionsCategory category, int64_t value)
+void ConfigMetrics::Set(const std::string& cfg, const OptionsCategory category, const std::string type, int64_t value)
 {
-    _config->Add({{"type", "int"}, {"name", cfg}, {"category", CategoryToString(category)}}).Set((double)value);
+    _config->Add({{"type", type}, {"name", cfg}, {"category", CategoryToString(category)}}).Set((double)value);
 }
 void ConfigMetrics::SetFlag(const std::string& cfg, const OptionsCategory category,  bool value)
 {

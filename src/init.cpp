@@ -1396,32 +1396,32 @@ bool AppInitMain(NodeContext& node, interfaces::BlockAndHeaderTipInfo* tip_info)
 
     configMetrics.SetIBD(true); // reset by CChainState::IsInitialBlockDownload()
 
-    configMetrics.Set("bantime", OptionsCategory::CONNECTION, args.GetArg("-bantime", DEFAULT_MISBEHAVING_BANTIME));
-    configMetrics.Set("blockmaxweight", OptionsCategory::BLOCK_CREATION, args.GetArg("-blockmaxweight", DEFAULT_BLOCK_MAX_WEIGHT));
-    configMetrics.Set("blockmintxfee", OptionsCategory::BLOCK_CREATION, args.GetArg("-blockmintxfee", DEFAULT_BLOCK_MIN_TX_FEE));
-    configMetrics.Set("bytespersigop", OptionsCategory::NODE_RELAY, nBytesPerSigOp);
-    configMetrics.Set("checkblocks", OptionsCategory::DEBUG_TEST, args.GetArg("-checkblocks", DEFAULT_CHECKBLOCKS));
-    configMetrics.Set("checklevel", OptionsCategory::DEBUG_TEST, args.GetArg("-checklevel", DEFAULT_CHECKLEVEL));
-    configMetrics.Set("checkmempool", OptionsCategory::DEBUG_TEST, check_ratio);
-    configMetrics.Set("datacarriersize", OptionsCategory::NODE_RELAY, nMaxDatacarrierBytes);
-    configMetrics.Set("dbcache",OptionsCategory::OPTIONS, nTotalCache);
-    configMetrics.Set("maxmempool", OptionsCategory::OPTIONS, nMempoolSizeMax);
+    configMetrics.Set("bantime", OptionsCategory::CONNECTION, "seconds", args.GetArg("-bantime", DEFAULT_MISBEHAVING_BANTIME));
+    configMetrics.Set("blockmaxweight", OptionsCategory::BLOCK_CREATION, "int", args.GetArg("-blockmaxweight", DEFAULT_BLOCK_MAX_WEIGHT));
+    configMetrics.Set("blockmintxfee", OptionsCategory::BLOCK_CREATION, "int", args.GetArg("-blockmintxfee", DEFAULT_BLOCK_MIN_TX_FEE));
+    configMetrics.Set("bytespersigop", OptionsCategory::NODE_RELAY,"bytes", nBytesPerSigOp);
+    configMetrics.Set("checkblocks", OptionsCategory::DEBUG_TEST, "int", args.GetArg("-checkblocks", DEFAULT_CHECKBLOCKS));
+    configMetrics.Set("checklevel", OptionsCategory::DEBUG_TEST, "int", args.GetArg("-checklevel", DEFAULT_CHECKLEVEL));
+    configMetrics.Set("checkmempool", OptionsCategory::DEBUG_TEST, "int", check_ratio);
+    configMetrics.Set("datacarriersize", OptionsCategory::NODE_RELAY, "bytes", nMaxDatacarrierBytes);
+    configMetrics.Set("dbcache",OptionsCategory::OPTIONS, "bytes", nTotalCache);
+    configMetrics.Set("maxmempool", OptionsCategory::OPTIONS, "bytes", nMempoolSizeMax);
     int64_t nExpiryTimeout = gArgs.GetArg("-mempoolexpiry", DEFAULT_MEMPOOL_EXPIRY) * 60 * 60;
-    configMetrics.Set("mempoolexpiry", OptionsCategory::OPTIONS, nExpiryTimeout);
-    configMetrics.Set("maxorphantx",OptionsCategory::OPTIONS, args.GetArg("-maxorphantx", DEFAULT_MAX_ORPHAN_TRANSACTIONS));
-    configMetrics.Set("maxsigcachesize",OptionsCategory::DEBUG_TEST ,args.GetArg("-maxsigcachesizze", DEFAULT_MAX_SIG_CACHE_SIZE));
-    configMetrics.Set("maxtipage", OptionsCategory::DEBUG_TEST, nMaxTipAge);
-    configMetrics.Set("maxconnections", OptionsCategory::CONNECTION, nMaxConnections);
+    configMetrics.Set("mempoolexpiry", OptionsCategory::OPTIONS, "seconds", nExpiryTimeout);
+    configMetrics.Set("maxorphantx",OptionsCategory::OPTIONS, "int", args.GetArg("-maxorphantx", DEFAULT_MAX_ORPHAN_TRANSACTIONS));
+    configMetrics.Set("maxsigcachesize",OptionsCategory::DEBUG_TEST ,"bytes", args.GetArg("-maxsigcachesizze", DEFAULT_MAX_SIG_CACHE_SIZE)*1024*1024);
+    configMetrics.Set("maxtipage", OptionsCategory::DEBUG_TEST, "seconds", nMaxTipAge);
+    configMetrics.Set("maxconnections", OptionsCategory::CONNECTION, "int", nMaxConnections);
     int64_t max_adjustment = std::max<int64_t>(0, gArgs.GetArg("-maxtimeadjustment", DEFAULT_MAX_TIME_ADJUSTMENT));
-    configMetrics.Set("maxtimeadjustment", OptionsCategory::CONNECTION, max_adjustment);
-    configMetrics.Set("minrelaytxfee", OptionsCategory::NODE_RELAY, args.GetArg("-minrelaytxfee", DEFAULT_MIN_RELAY_TX_FEE));
-    configMetrics.Set("par", OptionsCategory::OPTIONS, script_threads);
-    configMetrics.Set("peertimeout", OptionsCategory::CONNECTION, peer_connect_timeout);
-    configMetrics.Set("prune", OptionsCategory::OPTIONS, nPruneTarget);
-    configMetrics.Set("rpcserialversion", OptionsCategory::RPC, args.GetArg("-rpcserialversion", DEFAULT_RPC_SERIALIZE_VERSION));
-    configMetrics.Set("rpcthreads", OptionsCategory::RPC, args.GetArg("-rpcthreads", DEFAULT_HTTP_THREADS));
-    configMetrics.Set("rpcallowip", OptionsCategory::RPC, args.GetArgs("-rpcallowip").size());
-    configMetrics.Set("timeout", OptionsCategory::CONNECTION,  nConnectTimeout);
+    configMetrics.Set("maxtimeadjustment", OptionsCategory::CONNECTION, "seconds", max_adjustment);
+    configMetrics.Set("minrelaytxfee", OptionsCategory::NODE_RELAY, "int", args.GetArg("-minrelaytxfee", DEFAULT_MIN_RELAY_TX_FEE));
+    configMetrics.Set("par", OptionsCategory::OPTIONS, "int", script_threads);
+    configMetrics.Set("peertimeout", OptionsCategory::CONNECTION, "seconds", peer_connect_timeout);
+    configMetrics.Set("prune", OptionsCategory::OPTIONS, "int", nPruneTarget);
+    configMetrics.Set("rpcserialversion", OptionsCategory::RPC, "int", args.GetArg("-rpcserialversion", DEFAULT_RPC_SERIALIZE_VERSION));
+    configMetrics.Set("rpcthreads", OptionsCategory::RPC, "int", args.GetArg("-rpcthreads", DEFAULT_HTTP_THREADS));
+    configMetrics.Set("rpcallowip", OptionsCategory::RPC, "int", args.GetArgs("-rpcallowip").size());
+    configMetrics.Set("timeout", OptionsCategory::CONNECTION, "seconds",  nConnectTimeout);
     //configMetrics.Set("rpcwhitelist", OptionsCategory::RPC, args.GetArgs("-rpcwhitelist").size());
     //configMetrics.Set("chainstate-db", nCoinDBCache);
     //configMetrics.Set("txindex-cache", nTxIndexCache);
@@ -1851,7 +1851,7 @@ bool AppInitMain(NodeContext& node, interfaces::BlockAndHeaderTipInfo* tip_info)
     connOptions.m_use_addrman_outgoing = !args.IsArgSet("-connect");
     if (!connOptions.m_use_addrman_outgoing) {
         const auto connect = args.GetArgs("-connect");
-        configMetrics.Set("connect", OptionsCategory::CONNECTION, connect.size());
+        configMetrics.Set("connect", OptionsCategory::CONNECTION, "int", connect.size());
         if (connect.size() != 1 || connect[0] != "0") {
             connOptions.m_specified_outgoing = connect;
         }
@@ -1869,12 +1869,12 @@ bool AppInitMain(NodeContext& node, interfaces::BlockAndHeaderTipInfo* tip_info)
         SetReachable(NET_I2P, false);
     }
 
-    configMetrics.Set("maxuploadtarget", OptionsCategory::CONNECTION, connOptions.nMaxOutboundLimit);
-    configMetrics.Set("maxsendbuffer", OptionsCategory::CONNECTION, connOptions.nSendBufferMaxSize);
-    configMetrics.Set("maxreceivebuffer",OptionsCategory::CONNECTION, connOptions.nReceiveFloodSize);
-    configMetrics.Set("seednode", OptionsCategory::CONNECTION,  connOptions.vSeedNodes.size());
-    configMetrics.Set("whitelist", OptionsCategory::CONNECTION,  connOptions.vWhitelistedRange.size());
-    configMetrics.Set("whitelistbind", OptionsCategory::CONNECTION,  connOptions.vWhiteBinds.size());
+    configMetrics.Set("maxuploadtarget", OptionsCategory::CONNECTION, "bytes",connOptions.nMaxOutboundLimit);
+    configMetrics.Set("maxsendbuffer", OptionsCategory::CONNECTION, "bytes", connOptions.nSendBufferMaxSize);
+    configMetrics.Set("maxreceivebuffer",OptionsCategory::CONNECTION, "bytes", connOptions.nReceiveFloodSize);
+    configMetrics.Set("seednode", OptionsCategory::CONNECTION, "bytes", connOptions.vSeedNodes.size());
+    configMetrics.Set("whitelist", OptionsCategory::CONNECTION,  "int", connOptions.vWhitelistedRange.size());
+    configMetrics.Set("whitelistbind", OptionsCategory::CONNECTION, "int" , connOptions.vWhiteBinds.size());
 
     if (!node.connman->Start(*node.scheduler, connOptions)) {
         return false;

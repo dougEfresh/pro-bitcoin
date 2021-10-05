@@ -130,7 +130,7 @@ private:
     }
 public:
     explicit ConfigMetrics(const std::string& chain, prometheus::Registry& registry);
-    void Set(const std::string& cfg, const OptionsCategory category, int64_t value);
+    void Set(const std::string& cfg, const OptionsCategory category, const std::string type, int64_t value);
     void SetFlag(const std::string& cfg, const OptionsCategory category, bool value);
     void SetIBD(const bool value);
 };
