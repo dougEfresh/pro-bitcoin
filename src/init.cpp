@@ -1872,7 +1872,7 @@ bool AppInitMain(NodeContext& node, interfaces::BlockAndHeaderTipInfo* tip_info)
     configMetrics.Set("maxuploadtarget", OptionsCategory::CONNECTION, "bytes",connOptions.nMaxOutboundLimit);
     configMetrics.Set("maxsendbuffer", OptionsCategory::CONNECTION, "bytes", connOptions.nSendBufferMaxSize);
     configMetrics.Set("maxreceivebuffer",OptionsCategory::CONNECTION, "bytes", connOptions.nReceiveFloodSize);
-    configMetrics.Set("seednode", OptionsCategory::CONNECTION, "bytes", connOptions.vSeedNodes.size());
+    configMetrics.Set("seednode", OptionsCategory::CONNECTION, "int", connOptions.vSeedNodes.size());
     configMetrics.Set("whitelist", OptionsCategory::CONNECTION,  "int", connOptions.vWhitelistedRange.size());
     configMetrics.Set("whitelistbind", OptionsCategory::CONNECTION, "int" , connOptions.vWhiteBinds.size());
 
