@@ -174,6 +174,6 @@ void MetricsNotificationsInterface::TransactionAddedToMempool(const CTransaction
 void MetricsNotificationsInterface::TransactionRemovedFromMempool(const CTransactionRef& tx, MemPoolRemovalReason reason,
                                                                   uint64_t mempool_sequence)
 {
-    _memPoolMetrics.Removed(static_cast<int>(reason));
+    _memPoolMetrics.Removed(reason);
 }
 } // namespace metrics

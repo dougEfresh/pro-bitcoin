@@ -10,6 +10,7 @@
 #include <validationinterface.h>
 #include <net_permissions.h>
 #include <util/system.h>
+#include <txmempool.h>
 
 namespace metrics {
 static auto prom_registry = std::make_shared<prometheus::Registry>(); // NOLINT(cert-err58-cpp)
@@ -346,7 +347,7 @@ protected:
     prometheus::Counter* _vout_incoming_counter;
     prometheus::Counter* _incoming_size_counter;
     prometheus::Counter* _incoming_amt_counter;
-    std::vector<prometheus::Counter*> _removed_counter;
+    std::map<MemPoolRemovalReason, prometheus::Counter*> _removed_counter;
     prometheus::Gauge* _orphan_size_gauge;
     prometheus::Gauge* _orphan_outpoint_gauge;
 
@@ -355,7 +356,7 @@ public:
     virtual void AcceptTime(long amt){};
     virtual void Transactions(MemPoolType type, long amt){};
     virtual void Incoming(size_t in, size_t out, unsigned int byte_size, int64_t amt){};
-    virtual void Removed(unsigned int reason){};
+    virtual void Removed(MemPoolRemovalReason reason){};
     virtual void Orphans(size_t map, size_t outpoint){};
 };
 class MemPoolMetricsImpl : MemPoolMetrics, Metrics
@@ -366,7 +367,7 @@ public:
     void AcceptTime(long amt) override;
     void Transactions(MemPoolType type, long amt) override;
     void Incoming(size_t in, size_t out, unsigned int byte_size, int64_t amt) override;
-    void Removed(unsigned int reason) override;
+    void Removed(MemPoolRemovalReason reason) override;
     void Orphans(size_t map, size_t outpoint) override;
 };
 
