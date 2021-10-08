@@ -1023,6 +1023,7 @@ bool MemPoolAccept::Finalize(const ATMPArgs& args, Workspace& ws)
 
 MempoolAcceptResult MemPoolAccept::AcceptSingleTransaction(const CTransactionRef& ptx, ATMPArgs& args)
 {
+    static auto& mempoolMetrics = metricsContainer->MemPool();
     AssertLockHeld(cs_main);
     LOCK(m_pool.cs); // mempool "read lock" (held through GetMainSignals().TransactionAddedToMempool())
 
@@ -1048,9 +1049,11 @@ MempoolAcceptResult MemPoolAccept::AcceptSingleTransaction(const CTransactionRef
     if (!Finalize(args, ws)) return MempoolAcceptResult::Failure(ws.m_state);
 
     GetMainSignals().TransactionAddedToMempool(ptx, m_pool.GetAndIncrementSequence());
-    metricsContainer->MemPool().Transactions(metrics::MemPoolType::POOL_SIZE, m_pool.size());
-    metricsContainer->MemPool().Transactions(metrics::MemPoolType::POOL_TRANSACTION_BYTES, m_pool.GetTotalTxSize());
-    metricsContainer->MemPool().Transactions(metrics::MemPoolType::POOl_USAGE, m_pool.DynamicMemoryUsage());
+    mempoolMetrics.Transactions(metrics::MemPoolType::POOL_SIZE, m_pool.size());
+    mempoolMetrics.Transactions(metrics::MemPoolType::POOL_TRANSACTION_BYTES, m_pool.GetTotalTxSize());
+    mempoolMetrics.Transactions(metrics::MemPoolType::POOl_USAGE, m_pool.DynamicMemoryUsage());
+    mempoolMetrics.Transactions(metrics::MemPoolType::POOL_FEE, m_pool.GetTotalFee());
+    mempoolMetrics.Transactions(metrics::MemPoolType::POOL_UPDATE, m_pool.GetTransactionsUpdated());
     return MempoolAcceptResult::Success(std::move(ws.m_replaced_transactions), ws.m_base_fees);
 }
 

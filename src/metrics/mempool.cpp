@@ -24,7 +24,9 @@ MemPoolMetricsImpl::MemPoolMetricsImpl(const std::string& chain, prometheus::Reg
         &mempool_family.Add({{"type", "size"}}),
         &mempool_family.Add({{"type", "bytes"}}),
         &mempool_family.Add({{"type", "usage"}}),
-        &mempool_family.Add({{"type", "fee"}})};
+        &mempool_family.Add({{"type", "fee"}}),
+        &mempool_family.Add({{"type", "updated"}})
+    };
     _vin_incoming_counter = &incoming_family.Add({{"type", "vin"}});
     _vout_incoming_counter = &incoming_family.Add({{"type", "vout"}});
     _incoming_size_counter = &incoming_family.Add({{"type", "bytes"}});

@@ -37,7 +37,8 @@ enum MemPoolType {
     POOL_SIZE,
     POOL_TRANSACTION_BYTES,
     POOl_USAGE,
-    POOL_FEE
+    POOL_FEE,
+    POOL_UPDATE,
 };
 
 class Metrics
