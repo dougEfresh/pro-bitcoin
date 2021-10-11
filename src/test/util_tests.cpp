@@ -2456,4 +2456,31 @@ BOOST_AUTO_TEST_CASE(remove_prefix)
     BOOST_CHECK_EQUAL(RemovePrefix("", ""), "");
 }
 
+BOOST_AUTO_TEST_CASE(util_ParseByteUnits)
+{
+    // default multiplier is MiB
+    BOOST_CHECK_EQUAL(ParseByteUnits("1").value_or(0), 1L << 20);
+
+    BOOST_CHECK_EQUAL(ParseByteUnits("1k").value_or(0), 1L << 10);
+    BOOST_CHECK_EQUAL(ParseByteUnits("1k").value_or(0), 1L << 10);
+
+    BOOST_CHECK_EQUAL(ParseByteUnits("2m").value_or(0), 2L << 20);
+    BOOST_CHECK_EQUAL(ParseByteUnits("2M").value_or(0), 2L << 20);
+
+    BOOST_CHECK_EQUAL(ParseByteUnits("3g").value_or(0), 3L << 30);
+    BOOST_CHECK_EQUAL(ParseByteUnits("3G").value_or(0), 3L << 30);
+
+    BOOST_CHECK_EQUAL(ParseByteUnits("4t").value_or(0), 4L << 40);
+    BOOST_CHECK_EQUAL(ParseByteUnits("4T").value_or(0), 4L << 40);
+
+    // override default multiplier
+    BOOST_CHECK_EQUAL(ParseByteUnits("5", 1L << 40).value_or(0), 5L << 40);
+
+    BOOST_CHECK_EQUAL(ParseByteUnits("").value_or(-1), -1L);
+    BOOST_CHECK_EQUAL(ParseByteUnits("foo").value_or(-1), -1L);
+
+    // whitespace
+    BOOST_CHECK_EQUAL(ParseByteUnits("123m ").value_or(-1), -1L);
+}
+
 BOOST_AUTO_TEST_SUITE_END()

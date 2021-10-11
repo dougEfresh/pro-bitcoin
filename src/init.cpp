@@ -59,6 +59,7 @@
 #include <util/asmap.h>
 #include <util/check.h>
 #include <util/moneystr.h>
+#include <util/strencodings.h>
 #include <util/string.h>
 #include <util/syscall_sandbox.h>
 #include <util/system.h>
@@ -1749,7 +1750,7 @@ bool AppInitMain(NodeContext& node, interfaces::BlockAndHeaderTipInfo* tip_info)
     connOptions.nReceiveFloodSize = 1000 * args.GetIntArg("-maxreceivebuffer", DEFAULT_MAXRECEIVEBUFFER);
     connOptions.m_added_nodes = args.GetArgs("-addnode");
 
-    connOptions.nMaxOutboundLimit = 1024 * 1024 * args.GetIntArg("-maxuploadtarget", DEFAULT_MAX_UPLOAD_TARGET);
+    connOptions.nMaxOutboundLimit = ParseByteUnits(args.GetArg("-maxuploadtarget", "")).value_or(DEFAULT_MAX_UPLOAD_TARGET);
     connOptions.m_peer_connect_timeout = peer_connect_timeout;
 
     for (const std::string& bind_arg : args.GetArgs("-bind")) {
