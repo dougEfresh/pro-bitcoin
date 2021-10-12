@@ -2459,22 +2459,22 @@ BOOST_AUTO_TEST_CASE(remove_prefix)
 BOOST_AUTO_TEST_CASE(util_ParseByteUnits)
 {
     // default multiplier is MiB
-    BOOST_CHECK_EQUAL(ParseByteUnits("1").value_or(0), 1UL << 20);
+    BOOST_CHECK_EQUAL(ParseByteUnits("1").value_or(0), 1UL << 20UL);
 
     BOOST_CHECK_EQUAL(ParseByteUnits("1k").value_or(0), 1000UL);
-    BOOST_CHECK_EQUAL(ParseByteUnits("1K").value_or(0), 1UL << 10);
+    BOOST_CHECK_EQUAL(ParseByteUnits("1K").value_or(0), 1UL << 10UL);
 
-    BOOST_CHECK_EQUAL(ParseByteUnits("2m").value_or(0), 2UL * 1000 * 1000);
-    BOOST_CHECK_EQUAL(ParseByteUnits("2M").value_or(0), 2UL << 20);
+    BOOST_CHECK_EQUAL(ParseByteUnits("2m").value_or(0), 2UL * 1000UL * 1000UL);
+    BOOST_CHECK_EQUAL(ParseByteUnits("2M").value_or(0), 2UL << 20UL);
 
-    BOOST_CHECK_EQUAL(ParseByteUnits("3g").value_or(0), 3UL *1000 * 1000 * 1000);
-    BOOST_CHECK_EQUAL(ParseByteUnits("3G").value_or(0), 3UL << 30);
+    BOOST_CHECK_EQUAL(ParseByteUnits("3g").value_or(0), 3UL * 1000UL * 1000UL * 1000UL);
+    BOOST_CHECK_EQUAL(ParseByteUnits("3G").value_or(0), 3UL << 30UL);
 
-    BOOST_CHECK_EQUAL(ParseByteUnits("4t").value_or(0), 4UL * 1000 * 1000 * 1000 * 1000);
-    BOOST_CHECK_EQUAL(ParseByteUnits("4T").value_or(0), 4UL << 40);
+    BOOST_CHECK_EQUAL(ParseByteUnits("4t").value_or(0), uint64_t{4} * 1000UL * 1000UL * 1000UL * 1000UL);
+    BOOST_CHECK_EQUAL(ParseByteUnits("4T").value_or(0), uint64_t{4} << 40);
 
     // override default multiplier
-    BOOST_CHECK_EQUAL(ParseByteUnits("5", 1L << 40).value_or(0), 5UL << 40);
+    BOOST_CHECK_EQUAL(ParseByteUnits("5", uint64_t{1} << 40).value_or(0), uint64_t{5} << 40);
 
     // NaN
     BOOST_CHECK_EQUAL(ParseByteUnits("").value_or(1), 1L);
@@ -2488,6 +2488,9 @@ BOOST_AUTO_TEST_CASE(util_ParseByteUnits)
 
     // zero padding
     BOOST_CHECK_EQUAL(ParseByteUnits("020M").value_or(1), 20UL << 20);
+
+    // fractions not allowed
+    BOOST_CHECK_EQUAL(ParseByteUnits("0.5T").value_or(1), 1);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
