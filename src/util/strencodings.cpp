@@ -546,22 +546,22 @@ std::optional<uint64_t> ParseByteUnits(const std::string& str, const uint64_t de
             return isParsed ? std::optional<uint64_t>{nBytes * 1024} : std::nullopt;
             break;
         case 'm':
-            return isParsed ? std::optional<uint64_t>{nBytes * 1000 * 1000} : std::nullopt;
+            return isParsed ? std::optional<uint64_t>{nBytes * 1000000UL} : std::nullopt;
             break;
         case 'M':
-            return isParsed ? std::optional<uint64_t>{nBytes * 1024 * 1024} : std::nullopt;
+            return isParsed ? std::optional<uint64_t>{nBytes << 20} : std::nullopt;
             break;
         case 'g':
-            return isParsed ? std::optional<uint64_t>{nBytes * 1000 * 1000 * 1000} : std::nullopt;
+            return isParsed ? std::optional<uint64_t>{nBytes * 1000000000UL} : std::nullopt;
             break;
         case 'G':
-            return isParsed ? std::optional<uint64_t>{nBytes * 1024 * 1024 * 1024} : std::nullopt;
+            return isParsed ? std::optional<uint64_t>{nBytes << 30} : std::nullopt;
             break;
         case 't':
-            return isParsed ? std::optional<uint64_t>{nBytes * 1000 * 1000 * 1000 * 1000} : std::nullopt;
+            return isParsed ? std::optional<uint64_t>{nBytes * 1000000000000UL} : std::nullopt;
             break;
         case 'T':
-            return isParsed ? std::optional<uint64_t>{nBytes * 1024 * 1024 * 1024 * 1024} : std::nullopt;
+            return isParsed ? std::optional<uint64_t>{nBytes << 40} : std::nullopt;
             break;
         default:
             // no unit found, use default with str
