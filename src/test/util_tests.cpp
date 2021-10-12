@@ -2462,19 +2462,19 @@ BOOST_AUTO_TEST_CASE(util_ParseByteUnits)
     BOOST_CHECK_EQUAL(ParseByteUnits("1").value_or(0), 1UL << 20UL);
 
     BOOST_CHECK_EQUAL(ParseByteUnits("1k").value_or(0), 1000UL);
-    BOOST_CHECK_EQUAL(ParseByteUnits("1K").value_or(0), 1UL << 10UL);
+    BOOST_CHECK_EQUAL(ParseByteUnits("1K").value_or(0), 1UL << 10);
 
-    BOOST_CHECK_EQUAL(ParseByteUnits("2m").value_or(0), 2UL * 1000000UL);
-    BOOST_CHECK_EQUAL(ParseByteUnits("2M").value_or(0), 2UL << 20UL);
+    BOOST_CHECK_EQUAL(ParseByteUnits("2m").value_or(0), 2UL * 1000 * 1000);
+    BOOST_CHECK_EQUAL(ParseByteUnits("2M").value_or(0), 2UL << 20);
 
-    BOOST_CHECK_EQUAL(ParseByteUnits("3g").value_or(0), 3UL * 1000000000UL);
-    BOOST_CHECK_EQUAL(ParseByteUnits("3G").value_or(0), 3UL << 30UL);
+    BOOST_CHECK_EQUAL(ParseByteUnits("3g").value_or(0), 3UL * 1000 * 1000 * 1000);
+    BOOST_CHECK_EQUAL(ParseByteUnits("3G").value_or(0), 3UL << 30);
 
-    BOOST_CHECK_EQUAL(ParseByteUnits("4t").value_or(0), 4UL * 1000000000000UL);
-    BOOST_CHECK_EQUAL(ParseByteUnits("4T").value_or(0), 4UL << 40);
+    BOOST_CHECK_EQUAL(ParseByteUnits("4t").value_or(0), 4UL * 1000 * 1000 * 1000 * 1000);
+    BOOST_CHECK_EQUAL(ParseByteUnits("4T").value_or(0), uint64_t{4} << 40);
 
     // override default multiplier
-    BOOST_CHECK_EQUAL(ParseByteUnits("5", 1UL << 40).value_or(0), 5UL << 40);
+    BOOST_CHECK_EQUAL(ParseByteUnits("5", uint64_t{1} << 40).value_or(0), uint64_t{5} << 40);
 
     // NaN
     BOOST_CHECK_EQUAL(ParseByteUnits("").value_or(1), 1L);
