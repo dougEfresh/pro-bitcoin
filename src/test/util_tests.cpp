@@ -2470,7 +2470,7 @@ BOOST_AUTO_TEST_CASE(util_ParseByteUnits)
     BOOST_CHECK_EQUAL(ParseByteUnits("3g").value_or(0), 3UL * 1000 * 1000 * 1000);
     BOOST_CHECK_EQUAL(ParseByteUnits("3G").value_or(0), 3UL << 30);
 
-    BOOST_CHECK_EQUAL(ParseByteUnits("4t").value_or(0), 4UL * 1000 * 1000 * 1000 * 1000);
+    BOOST_CHECK_EQUAL(ParseByteUnits("4t").value_or(0), uint64_t{4} * 1000 * 1000 * 1000 * 1000);
     BOOST_CHECK_EQUAL(ParseByteUnits("4T").value_or(0), uint64_t{4} << 40);
 
     // override default multiplier
