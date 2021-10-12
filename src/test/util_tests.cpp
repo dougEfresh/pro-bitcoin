@@ -2459,28 +2459,35 @@ BOOST_AUTO_TEST_CASE(remove_prefix)
 BOOST_AUTO_TEST_CASE(util_ParseByteUnits)
 {
     // default multiplier is MiB
-    BOOST_CHECK_EQUAL(ParseByteUnits("1").value_or(0), 1L << 20);
+    BOOST_CHECK_EQUAL(ParseByteUnits("1").value_or(0), 1UL << 20);
 
-    BOOST_CHECK_EQUAL(ParseByteUnits("1k").value_or(0), 1L << 10);
-    BOOST_CHECK_EQUAL(ParseByteUnits("1k").value_or(0), 1L << 10);
+    BOOST_CHECK_EQUAL(ParseByteUnits("1k").value_or(0), 1000UL);
+    BOOST_CHECK_EQUAL(ParseByteUnits("1K").value_or(0), 1UL << 10);
 
-    BOOST_CHECK_EQUAL(ParseByteUnits("2m").value_or(0), 2L << 20);
-    BOOST_CHECK_EQUAL(ParseByteUnits("2M").value_or(0), 2L << 20);
+    BOOST_CHECK_EQUAL(ParseByteUnits("2m").value_or(0), 2UL * 1000 * 1000);
+    BOOST_CHECK_EQUAL(ParseByteUnits("2M").value_or(0), 2UL << 20);
 
-    BOOST_CHECK_EQUAL(ParseByteUnits("3g").value_or(0), 3L << 30);
-    BOOST_CHECK_EQUAL(ParseByteUnits("3G").value_or(0), 3L << 30);
+    BOOST_CHECK_EQUAL(ParseByteUnits("3g").value_or(0), 3UL *1000 * 1000 * 1000);
+    BOOST_CHECK_EQUAL(ParseByteUnits("3G").value_or(0), 3UL << 30);
 
-    BOOST_CHECK_EQUAL(ParseByteUnits("4t").value_or(0), 4L << 40);
-    BOOST_CHECK_EQUAL(ParseByteUnits("4T").value_or(0), 4L << 40);
+    BOOST_CHECK_EQUAL(ParseByteUnits("4t").value_or(0), 4UL * 1000 * 1000 * 1000 * 1000);
+    BOOST_CHECK_EQUAL(ParseByteUnits("4T").value_or(0), 4UL << 40);
 
     // override default multiplier
-    BOOST_CHECK_EQUAL(ParseByteUnits("5", 1L << 40).value_or(0), 5L << 40);
+    BOOST_CHECK_EQUAL(ParseByteUnits("5", 1L << 40).value_or(0), 5UL << 40);
 
-    BOOST_CHECK_EQUAL(ParseByteUnits("").value_or(-1), -1L);
-    BOOST_CHECK_EQUAL(ParseByteUnits("foo").value_or(-1), -1L);
+    // NaN
+    BOOST_CHECK_EQUAL(ParseByteUnits("").value_or(1), 1L);
+    BOOST_CHECK_EQUAL(ParseByteUnits("foo").value_or(1), 1L);
 
     // whitespace
-    BOOST_CHECK_EQUAL(ParseByteUnits("123m ").value_or(-1), -1L);
+    BOOST_CHECK_EQUAL(ParseByteUnits("123m ").value_or(1), 1L);
+
+    // be positive
+    BOOST_CHECK_EQUAL(ParseByteUnits("-123m").value_or(1), 1L);
+
+    // zero padding
+    BOOST_CHECK_EQUAL(ParseByteUnits("020M").value_or(1), 20UL << 20);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

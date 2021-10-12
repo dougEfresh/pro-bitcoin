@@ -527,32 +527,45 @@ std::string HexStr(const Span<const uint8_t> s)
     return rv;
 }
 
-std::optional<size_t> ParseByteUnits(const std::string& str, const size_t default_multiplier)
+std::optional<uint64_t> ParseByteUnits(const std::string& str, const uint64_t default_multiplier)
 {
     if (str.empty())
         return std::nullopt;
 
     auto v = str;
     auto unit = v.back();
-    size_t nBytes{0};
+    uint64_t nBytes{0};
 
     v.pop_back();
-    switch (ToLower(unit)) {
+    auto isParsed = ParseUInt64(v, &nBytes);
+    switch (unit) {
         case 'k':
-            return ParseUInt64(v, &nBytes) ? std::optional<size_t>{nBytes << 10} : std::nullopt;
+            return isParsed ? std::optional<uint64_t>{nBytes * 1000} : std::nullopt;
+            break;
+        case 'K':
+            return isParsed ? std::optional<uint64_t>{nBytes * 1024} : std::nullopt;
             break;
         case 'm':
-            return ParseUInt64(v, &nBytes) ? std::optional<size_t>{nBytes << 20} : std::nullopt;
+            return isParsed ? std::optional<uint64_t>{nBytes * 1000 * 1000} : std::nullopt;
+            break;
+        case 'M':
+            return isParsed ? std::optional<uint64_t>{nBytes * 1024 * 1024} : std::nullopt;
             break;
         case 'g':
-            return ParseUInt64(v, &nBytes) ? std::optional<size_t>{nBytes << 30} : std::nullopt;
+            return isParsed ? std::optional<uint64_t>{nBytes * 1000 * 1000 * 1000} : std::nullopt;
+            break;
+        case 'G':
+            return isParsed ? std::optional<uint64_t>{nBytes * 1024 * 1024 * 1024} : std::nullopt;
             break;
         case 't':
-            return ParseUInt64(v, &nBytes) ? std::optional<size_t>{nBytes << 40} : std::nullopt;
+            return isParsed ? std::optional<uint64_t>{nBytes * 1000 * 1000 * 1000 * 1000} : std::nullopt;
+            break;
+        case 'T':
+            return isParsed ? std::optional<uint64_t>{nBytes * 1024 * 1024 * 1024 * 1024} : std::nullopt;
             break;
         default:
             // no unit found, use default with str
-            return ParseUInt64(str, &nBytes) ?  std::optional<size_t>{nBytes * default_multiplier} : std::nullopt;
+            return ParseUInt64(str, &nBytes) ?  std::optional<uint64_t>{nBytes * default_multiplier} : std::nullopt;
             break;
     }
 }

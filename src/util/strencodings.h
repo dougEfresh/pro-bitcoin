@@ -306,14 +306,16 @@ std::string ToUpper(const std::string& str);
 std::string Capitalize(std::string str);
 
 /**
- * Parse a string with a suffix unit [k|K] [m|M] [g|G] [t|T] .
- *
- * Examples: 4m,6M,9g,78T
+ * Parse a string with suffix unit [k|K] [m|M] [g|G] [t|T] .
+ * Must be a whole integer, fractions are not allowed (0.5t)
+ * Lowercase units are 1000 base. Uppercase units are 1024 base.
+ * Examples: 2m,27M,19g,41T
  *
  * @param[in] str                  the string to convert into bytes
  * @param[in] default_multiplier   if no unit is found in str, use this multiplier. default is MiB
- * @returns                        optional size_t bytes from str
-  */
-std::optional<size_t> ParseByteUnits(const std::string& str, const size_t default_multiplier = 1024L*1024L);
+ * @returns                        optional uint64_t bytes from str or nullopt
+ *                                 if ParseUInt64 returns false, str is empty or trailing whitespace
+ */
+std::optional<uint64_t> ParseByteUnits(const std::string& str, const uint64_t default_multiplier = 1024L*1024L);
 
 #endif // BITCOIN_UTIL_STRENCODINGS_H
