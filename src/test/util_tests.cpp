@@ -5,6 +5,7 @@
 #include <util/system.h>
 
 #include <clientversion.h>
+#include <config/bitcoin-config.h> // For HAVE_BUILTIN_MUL_OVERFLOW
 #include <hash.h> // For Hash()
 #include <key.h>  // For CKey
 #include <sync.h>
