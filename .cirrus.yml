@@ -258,29 +258,29 @@ compute_credits_template: &CREDITS_TEMPLATE
 #     << : *CIRRUS_EPHEMERAL_WORKER_TEMPLATE_ENV
 #     FILE_ENV: "./ci/test/00_setup_env_native_nowallet.sh"
 
- task:
-   name: 'macOS 10.15 [gui, no tests] [focal]'
-   << : *DEPENDS_SDK_CACHE_TEMPLATE
-   << : *GLOBAL_TASK_TEMPLATE
-   container:
-     image: ubuntu:focal
-   env:
-     << : *CIRRUS_EPHEMERAL_WORKER_TEMPLATE_ENV
-     FILE_ENV: "./ci/test/00_setup_env_mac.sh"
+task:
+  name: 'macOS 10.15 [gui, no tests] [focal]'
+  << : *DEPENDS_SDK_CACHE_TEMPLATE
+  << : *GLOBAL_TASK_TEMPLATE
+  container:
+    image: ubuntu:focal
+  env:
+    << : *CIRRUS_EPHEMERAL_WORKER_TEMPLATE_ENV
+    FILE_ENV: "./ci/test/00_setup_env_mac.sh"
 
- task:
-   name: 'macOS 11 native [gui] [no depends]'
-   brew_install_script:
-     - brew install boost libevent berkeley-db4 qt@5 miniupnpc libnatpmp ccache zeromq qrencode sqlite libtool automake pkg-config gnu-getopt
-   << : *GLOBAL_TASK_TEMPLATE
-   osx_instance:
-     # Use latest image, but hardcode version to avoid silent upgrades (and breaks)
-     image: big-sur-xcode-12.5  # https://cirrus-ci.org/guide/macOS
-   env:
-     << : *CIRRUS_EPHEMERAL_WORKER_TEMPLATE_ENV
-     CI_USE_APT_INSTALL: "no"
-     PACKAGE_MANAGER_INSTALL: "echo"  # Nothing to do
-     FILE_ENV: "./ci/test/00_setup_env_mac_host.sh"
+task:
+  name: 'macOS 11 native [gui] [no depends]'
+  brew_install_script:
+    - brew install boost libevent berkeley-db4 qt@5 miniupnpc libnatpmp ccache zeromq qrencode sqlite libtool automake pkg-config gnu-getopt
+  << : *GLOBAL_TASK_TEMPLATE
+  osx_instance:
+    # Use latest image, but hardcode version to avoid silent upgrades (and breaks)
+    image: big-sur-xcode-12.5  # https://cirrus-ci.org/guide/macOS
+  env:
+    << : *CIRRUS_EPHEMERAL_WORKER_TEMPLATE_ENV
+    CI_USE_APT_INSTALL: "no"
+    PACKAGE_MANAGER_INSTALL: "echo"  # Nothing to do
+    FILE_ENV: "./ci/test/00_setup_env_mac_host.sh"
 
 # task:
 #   name: 'ARM64 Android APK [focal]'
