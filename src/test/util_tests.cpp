@@ -2492,8 +2492,10 @@ BOOST_AUTO_TEST_CASE(util_ParseByteUnits)
     // fractions not allowed
     BOOST_CHECK(!ParseByteUnits("0.5T").has_value());
 
+#if defined(HAVE_BUILTIN_MUL_OVERFLOW)
     // overflow
     BOOST_CHECK(!ParseByteUnits("18446744073709551615g").has_value());
+#endif
 }
 
 BOOST_AUTO_TEST_SUITE_END()

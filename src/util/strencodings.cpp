@@ -3,6 +3,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <config/bitcoin-config.h>
 #include <util/strencodings.h>
 #include <util/string.h>
 
@@ -12,7 +13,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <optional>
-#include <config/bitcoin-config.h>
 
 static const std::string CHARS_ALPHA_NUM = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
