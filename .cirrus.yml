@@ -153,36 +153,36 @@ compute_credits_template: &CREDITS_TEMPLATE
 #     # Exclude feature_dbcrash for now due to timeout
 #     - python test\functional\test_runner.py --nocleanup --ci --quiet --combinedlogslen=4000 --jobs=4 --timeout-factor=8 --failfast --extended --exclude feature_dbcrash
 
-task:
-  name: 'ARM [unit tests, no functional tests] [bullseye]'
-  << : *GLOBAL_TASK_TEMPLATE
-  arm_container:
-    image: debian:bullseye
-    cpu: 2
-    memory: 8G
-  env:
-    << : *CIRRUS_EPHEMERAL_WORKER_TEMPLATE_ENV
-    FILE_ENV: "./ci/test/00_setup_env_arm.sh"
-    QEMU_USER_CMD: ""  # Disable qemu and run the test natively
+# task:
+#   name: 'ARM [unit tests, no functional tests] [bullseye]'
+#   << : *GLOBAL_TASK_TEMPLATE
+#   arm_container:
+#     image: debian:bullseye
+#     cpu: 2
+#     memory: 8G
+#   env:
+#     << : *CIRRUS_EPHEMERAL_WORKER_TEMPLATE_ENV
+#     FILE_ENV: "./ci/test/00_setup_env_arm.sh"
+#     QEMU_USER_CMD: ""  # Disable qemu and run the test natively
 
-task:
-  name: 'Win64 [unit tests, no gui tests, no boost::process, no functional tests] [focal]'
-  << : *GLOBAL_TASK_TEMPLATE
-  container:
-    image: ubuntu:focal
-  env:
-    << : *CIRRUS_EPHEMERAL_WORKER_TEMPLATE_ENV
-    FILE_ENV: "./ci/test/00_setup_env_win64.sh"
+# task:
+#   name: 'Win64 [unit tests, no gui tests, no boost::process, no functional tests] [focal]'
+#   << : *GLOBAL_TASK_TEMPLATE
+#   container:
+#     image: ubuntu:focal
+#   env:
+#     << : *CIRRUS_EPHEMERAL_WORKER_TEMPLATE_ENV
+#     FILE_ENV: "./ci/test/00_setup_env_win64.sh"
 
-task:
-  name: '32-bit + dash [gui] [CentOS 8]'
-  << : *GLOBAL_TASK_TEMPLATE
-  container:
-    image: centos:8
-  env:
-    << : *CIRRUS_EPHEMERAL_WORKER_TEMPLATE_ENV
-    PACKAGE_MANAGER_INSTALL: "yum install -y"
-    FILE_ENV: "./ci/test/00_setup_env_i686_centos.sh"
+# task:
+#   name: '32-bit + dash [gui] [CentOS 8]'
+#   << : *GLOBAL_TASK_TEMPLATE
+#   container:
+#     image: centos:8
+#   env:
+#     << : *CIRRUS_EPHEMERAL_WORKER_TEMPLATE_ENV
+#     PACKAGE_MANAGER_INSTALL: "yum install -y"
+#     FILE_ENV: "./ci/test/00_setup_env_i686_centos.sh"
 
 # task:
 #   name: '[previous releases, uses qt5 dev package and some depends packages, DEBUG] [unsigned char] [bionic]'
@@ -237,19 +237,19 @@ task:
 #     MAKEJOBS: "-j8"
 #     FILE_ENV: "./ci/test/00_setup_env_native_fuzz.sh"
 
-task:
-  name: '[multiprocess, i686, DEBUG] [focal]'
-  << : *GLOBAL_TASK_TEMPLATE
-  container:
-    image: ubuntu:focal
-    cpu: 4
-    memory: 16G  # The default memory is sometimes just a bit too small, so double everything
-  env:
-    << : *CIRRUS_EPHEMERAL_WORKER_TEMPLATE_ENV
-    MAKEJOBS: "-j8"
-    FILE_ENV: "./ci/test/00_setup_env_i686_multiprocess.sh"
-
 # task:
+#   name: '[multiprocess, i686, DEBUG] [focal]'
+#   << : *GLOBAL_TASK_TEMPLATE
+#   container:
+#     image: ubuntu:focal
+#     cpu: 4
+#     memory: 16G  # The default memory is sometimes just a bit too small, so double everything
+#   env:
+#     << : *CIRRUS_EPHEMERAL_WORKER_TEMPLATE_ENV
+#     MAKEJOBS: "-j8"
+#     FILE_ENV: "./ci/test/00_setup_env_i686_multiprocess.sh"
+
+# # task:
 #   name: '[no wallet] [bionic]'
 #   << : *GLOBAL_TASK_TEMPLATE
 #   container:
@@ -258,40 +258,40 @@ task:
 #     << : *CIRRUS_EPHEMERAL_WORKER_TEMPLATE_ENV
 #     FILE_ENV: "./ci/test/00_setup_env_native_nowallet.sh"
 
+ task:
+   name: 'macOS 10.15 [gui, no tests] [focal]'
+   << : *DEPENDS_SDK_CACHE_TEMPLATE
+   << : *GLOBAL_TASK_TEMPLATE
+   container:
+     image: ubuntu:focal
+   env:
+     << : *CIRRUS_EPHEMERAL_WORKER_TEMPLATE_ENV
+     FILE_ENV: "./ci/test/00_setup_env_mac.sh"
+
+ task:
+   name: 'macOS 11 native [gui] [no depends]'
+   brew_install_script:
+     - brew install boost libevent berkeley-db4 qt@5 miniupnpc libnatpmp ccache zeromq qrencode sqlite libtool automake pkg-config gnu-getopt
+   << : *GLOBAL_TASK_TEMPLATE
+   osx_instance:
+     # Use latest image, but hardcode version to avoid silent upgrades (and breaks)
+     image: big-sur-xcode-12.5  # https://cirrus-ci.org/guide/macOS
+   env:
+     << : *CIRRUS_EPHEMERAL_WORKER_TEMPLATE_ENV
+     CI_USE_APT_INSTALL: "no"
+     PACKAGE_MANAGER_INSTALL: "echo"  # Nothing to do
+     FILE_ENV: "./ci/test/00_setup_env_mac_host.sh"
+
 # task:
-#   name: 'macOS 10.15 [gui, no tests] [focal]'
+#   name: 'ARM64 Android APK [focal]'
 #   << : *DEPENDS_SDK_CACHE_TEMPLATE
-#   << : *GLOBAL_TASK_TEMPLATE
+#   << : *BASE_TEMPLATE
+#   depends_sources_cache:
+#     folder: "depends/sources"
+#     fingerprint_script: git rev-list -1 HEAD ./depends
+#   << : *MAIN_TEMPLATE
 #   container:
 #     image: ubuntu:focal
 #   env:
 #     << : *CIRRUS_EPHEMERAL_WORKER_TEMPLATE_ENV
-#     FILE_ENV: "./ci/test/00_setup_env_mac.sh"
-
-# task:
-#   name: 'macOS 11 native [gui] [no depends]'
-#   brew_install_script:
-#     - brew install boost libevent berkeley-db4 qt@5 miniupnpc libnatpmp ccache zeromq qrencode sqlite libtool automake pkg-config gnu-getopt
-#   << : *GLOBAL_TASK_TEMPLATE
-#   osx_instance:
-#     # Use latest image, but hardcode version to avoid silent upgrades (and breaks)
-#     image: big-sur-xcode-12.5  # https://cirrus-ci.org/guide/macOS
-#   env:
-#     << : *CIRRUS_EPHEMERAL_WORKER_TEMPLATE_ENV
-#     CI_USE_APT_INSTALL: "no"
-#     PACKAGE_MANAGER_INSTALL: "echo"  # Nothing to do
-#     FILE_ENV: "./ci/test/00_setup_env_mac_host.sh"
-
-task:
-  name: 'ARM64 Android APK [focal]'
-  << : *DEPENDS_SDK_CACHE_TEMPLATE
-  << : *BASE_TEMPLATE
-  depends_sources_cache:
-    folder: "depends/sources"
-    fingerprint_script: git rev-list -1 HEAD ./depends
-  << : *MAIN_TEMPLATE
-  container:
-    image: ubuntu:focal
-  env:
-    << : *CIRRUS_EPHEMERAL_WORKER_TEMPLATE_ENV
-    FILE_ENV: "./ci/test/00_setup_env_android.sh"
+#     FILE_ENV: "./ci/test/00_setup_env_android.sh"
