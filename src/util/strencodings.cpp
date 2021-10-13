@@ -12,6 +12,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <optional>
+#include <config/bitcoin-config.h>
 
 static const std::string CHARS_ALPHA_NUM = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
@@ -535,37 +536,51 @@ std::optional<uint64_t> ParseByteUnits(const std::string& str, const uint64_t de
     auto v = str;
     auto unit = v.back();
     uint64_t nBytes{0};
+    uint64_t multiplier{default_multiplier};
 
     v.pop_back();
-    auto isParsed = ParseUInt64(v, &nBytes);
+    if (!(ParseUInt64(v, &nBytes) || ParseUInt64(str, &nBytes))) {
+        // failed to parse v and str
+        return std::nullopt;
+    }
+
     switch (unit) {
         case 'k':
-            return isParsed ? std::optional<uint64_t>{nBytes * 1000} : std::nullopt;
+            multiplier = 1000;
             break;
         case 'K':
-            return isParsed ? std::optional<uint64_t>{nBytes * 1024} : std::nullopt;
+            multiplier = 1024;
             break;
         case 'm':
-            return isParsed ? std::optional<uint64_t>{nBytes * 1000000} : std::nullopt;
+            multiplier = 1000 * 1000;
             break;
         case 'M':
-            return isParsed ? std::optional<uint64_t>{nBytes << 20} : std::nullopt;
+            multiplier = 1ULL << 20;
             break;
         case 'g':
-            return isParsed ? std::optional<uint64_t>{nBytes * 1000 * 1000 * 1000} : std::nullopt;
+            multiplier = 1000ULL * 1000 * 1000;
             break;
         case 'G':
-            return isParsed ? std::optional<uint64_t>{nBytes << 30} : std::nullopt;
+            multiplier = 1ULL << 30;
             break;
         case 't':
-            return isParsed ? std::optional<uint64_t>{nBytes * 1000 * 1000 * 1000 * 1000} : std::nullopt;
+            multiplier = 1000ULL * 1000 * 1000 * 1000; // force compiler to see uint64_t
             break;
         case 'T':
-            return isParsed ? std::optional<uint64_t>{nBytes << 40} : std::nullopt;
+            multiplier = 1ULL << 40;
             break;
         default:
-            // no unit found, use default with str
-            return ParseUInt64(str, &nBytes) ?  std::optional<uint64_t>{nBytes * default_multiplier} : std::nullopt;
+            // use default_multipiler
             break;
     }
+
+    int64_t total{0};
+#if defined(HAVE_BUILTIN_MUL_OVERFLOW)
+    if (__builtin_mul_overflow(nBytes, multiplier, &total)) {
+        return std::nullopt;
+    }
+#else
+    total = nBytes * multiplier;
+#endif
+    return std::optional<uint64_t>{total};
 }

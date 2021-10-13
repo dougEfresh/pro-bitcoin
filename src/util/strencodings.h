@@ -314,7 +314,7 @@ std::string Capitalize(std::string str);
  * @param[in] str                  the string to convert into bytes
  * @param[in] default_multiplier   if no unit is found in str, use this multiplier. default is MiB
  * @returns                        optional uint64_t bytes from str or nullopt
- *                                 if ParseUInt64 is false, str is empty or trailing whitespace
+ *                                 if ParseUInt64 is false, str is empty, trailing whitespace or overflow
  */
 std::optional<uint64_t> ParseByteUnits(const std::string& str, const uint64_t default_multiplier = 1024L*1024L);
 

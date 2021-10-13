@@ -2459,38 +2459,41 @@ BOOST_AUTO_TEST_CASE(remove_prefix)
 BOOST_AUTO_TEST_CASE(util_ParseByteUnits)
 {
     // default multiplier is MiB
-    BOOST_CHECK_EQUAL(ParseByteUnits("1").value_or(0), 1UL << 20UL);
+    BOOST_CHECK_EQUAL(ParseByteUnits("1").value_or(0), 1ULL << 20UL);
 
-    BOOST_CHECK_EQUAL(ParseByteUnits("1k").value_or(0), 1000UL);
-    BOOST_CHECK_EQUAL(ParseByteUnits("1K").value_or(0), 1UL << 10);
+    BOOST_CHECK_EQUAL(ParseByteUnits("1k").value_or(0), 1000ULL);
+    BOOST_CHECK_EQUAL(ParseByteUnits("1K").value_or(0), 1ULL << 10);
 
-    BOOST_CHECK_EQUAL(ParseByteUnits("2m").value_or(0), 2UL * 1000 * 1000);
-    BOOST_CHECK_EQUAL(ParseByteUnits("2M").value_or(0), 2UL << 20);
+    BOOST_CHECK_EQUAL(ParseByteUnits("2m").value_or(0), 2ULL * 1000 * 1000);
+    BOOST_CHECK_EQUAL(ParseByteUnits("2M").value_or(0), 2ULL << 20);
 
-    BOOST_CHECK_EQUAL(ParseByteUnits("3g").value_or(0), 3UL * 1000 * 1000 * 1000);
-    BOOST_CHECK_EQUAL(ParseByteUnits("3G").value_or(0), 3UL << 30);
+    BOOST_CHECK_EQUAL(ParseByteUnits("3g").value_or(0), 3ULL * 1000 * 1000 * 1000);
+    BOOST_CHECK_EQUAL(ParseByteUnits("3G").value_or(0), 3ULL << 30);
 
-    BOOST_CHECK_EQUAL(ParseByteUnits("4t").value_or(0), uint64_t{4} * 1000 * 1000 * 1000 * 1000);
-    BOOST_CHECK_EQUAL(ParseByteUnits("4T").value_or(0), uint64_t{4} << 40);
+    BOOST_CHECK_EQUAL(ParseByteUnits("4t").value_or(0), 4ULL * 1000 * 1000 * 1000 * 1000);
+    BOOST_CHECK_EQUAL(ParseByteUnits("4T").value_or(0), 4ULL << 40);
 
     // override default multiplier
-    BOOST_CHECK_EQUAL(ParseByteUnits("5", 1 << 10).value_or(0), 5 << 10);
+    BOOST_CHECK_EQUAL(ParseByteUnits("5", 1ULL << 10).value_or(0), 5ULL << 10);
 
     // NaN
-    BOOST_CHECK_EQUAL(ParseByteUnits("").value_or(1), 1L);
-    BOOST_CHECK_EQUAL(ParseByteUnits("foo").value_or(1), 1L);
+    BOOST_CHECK(!ParseByteUnits("").has_value());
+    BOOST_CHECK(!ParseByteUnits("foo").has_value());
 
     // whitespace
-    BOOST_CHECK_EQUAL(ParseByteUnits("123m ").value_or(1), 1L);
+    BOOST_CHECK(!ParseByteUnits("123m ").has_value());
 
     // be positive
-    BOOST_CHECK_EQUAL(ParseByteUnits("-123m").value_or(1), 1L);
+    BOOST_CHECK(!ParseByteUnits("-123m").has_value());
 
     // zero padding
-    BOOST_CHECK_EQUAL(ParseByteUnits("020M").value_or(1), 20UL << 20);
+    BOOST_CHECK_EQUAL(ParseByteUnits("020M").value_or(1), 20ULL << 20);
 
     // fractions not allowed
-    BOOST_CHECK_EQUAL(ParseByteUnits("0.5T").value_or(1), 1);
+    BOOST_CHECK(!ParseByteUnits("0.5T").has_value());
+
+    // overflow
+    BOOST_CHECK(!ParseByteUnits("18446744073709551615g").has_value());
 }
 
 BOOST_AUTO_TEST_SUITE_END()
