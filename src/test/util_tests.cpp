@@ -2474,7 +2474,7 @@ BOOST_AUTO_TEST_CASE(util_ParseByteUnits)
     BOOST_CHECK_EQUAL(ParseByteUnits("4T").value_or(0), uint64_t{4} << 40);
 
     // override default multiplier
-    BOOST_CHECK_EQUAL(ParseByteUnits("5", 1 << 30).value_or(0), 1 << 30);
+    BOOST_CHECK_EQUAL(ParseByteUnits("5", 1 << 10).value_or(0), 5 << 10);
 
     // NaN
     BOOST_CHECK_EQUAL(ParseByteUnits("").value_or(1), 1L);
