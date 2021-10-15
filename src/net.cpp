@@ -1360,7 +1360,7 @@ void CConnman::NotifyNumConnectionsChanged()
                 torNodes++;
             if(pnode->addr.IsI2P())
                 i2pNodes++;
-            
+
             if (pnode->HasPermission(NetPermissionFlags::All)) {
                 pAll++;
             } else {
@@ -3149,9 +3149,10 @@ void CConnman::PushMessage(CNode* pnode, CSerializedNetMsg&& msg)
 {
     static auto& netMetrics = metricsContainer->Net();
     static auto& peerMetrics = metricsContainer->Peer();
+    auto msg_sanitized = SanitizeString(msg.m_type);
     size_t nMessageSize = msg.data.size();
-    peerMetrics.PushMsgType(SanitizeString(msg.m_type));
-    LogPrint(BCLog::NET, "sending %s (%d bytes) peer=%d\n",  SanitizeString(msg.m_type), nMessageSize, pnode->GetId());
+    peerMetrics.PushMsgType(msg_sanitized);
+    LogPrint(BCLog::NET, "sending %s (%d bytes) peer=%d\n", msg_sanitized, nMessageSize, pnode->GetId());
     if (gArgs.GetBoolArg("-capturemessages", false)) {
         CaptureMessage(pnode->addr, msg.m_type, msg.data, /* incoming */ false);
     }

@@ -1425,8 +1425,6 @@ bool AppInitMain(NodeContext& node, interfaces::BlockAndHeaderTipInfo* tip_info)
     //configMetrics.Set("rpcwhitelist", OptionsCategory::RPC, args.GetArgs("-rpcwhitelist").size());
     //configMetrics.Set("chainstate-db", nCoinDBCache);
     //configMetrics.Set("txindex-cache", nTxIndexCache);
-    
-
 
     bool fLoaded = false;
     while (!fLoaded && !ShutdownRequested()) {
@@ -1869,6 +1867,7 @@ bool AppInitMain(NodeContext& node, interfaces::BlockAndHeaderTipInfo* tip_info)
         SetReachable(NET_I2P, false);
     }
 
+    connOptions.m_i2p_accept_incoming = args.GetBoolArg("-i2pacceptincoming", true);
     configMetrics.Set("maxuploadtarget", OptionsCategory::CONNECTION, "bytes",connOptions.nMaxOutboundLimit);
     configMetrics.Set("maxsendbuffer", OptionsCategory::CONNECTION, "bytes", connOptions.nSendBufferMaxSize);
     configMetrics.Set("maxreceivebuffer",OptionsCategory::CONNECTION, "bytes", connOptions.nReceiveFloodSize);

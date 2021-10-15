@@ -1555,7 +1555,6 @@ int ApplyTxInUndo(Coin&& undo, CCoinsViewCache& view, const COutPoint& out)
  *  When FAILED is returned, view is left in an indeterminate state. */
 DisconnectResult CChainState::DisconnectBlock(const CBlock& block, const CBlockIndex* pindex, CCoinsViewCache& view)
 {
-    auto start = std::chrono::high_resolution_clock::now();
     bool fClean = true;
 
     CBlockUndo blockUndo;
@@ -1607,9 +1606,6 @@ DisconnectResult CChainState::DisconnectBlock(const CBlock& block, const CBlockI
 
     // move best block pointer to prevout block
     view.SetBestBlock(pindex->pprev->GetBlockHash());
-    auto end = std::chrono::high_resolution_clock::now();
-    auto diff = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-    metricsContainer->Tx().CacheSize((double)view.GetCacheSize());
     return fClean ? DISCONNECT_OK : DISCONNECT_UNCLEAN;
 }
 
