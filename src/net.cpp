@@ -50,6 +50,8 @@
 
 #include <math.h>
 
+#include <metrics/metrics.h>
+
 /** Maximum number of block-relay-only anchor connections */
 static constexpr size_t MAX_BLOCK_RELAY_ONLY_ANCHORS = 2;
 static_assert (MAX_BLOCK_RELAY_ONLY_ANCHORS <= static_cast<size_t>(MAX_BLOCK_RELAY_ONLY_CONNECTIONS), "MAX_BLOCK_RELAY_ONLY_ANCHORS must not exceed MAX_BLOCK_RELAY_ONLY_CONNECTIONS.");
@@ -77,6 +79,8 @@ static constexpr int DNSSEEDS_DELAY_PEER_THRESHOLD = 1000; // "many" vs "few" pe
 
 /** The default timeframe for -maxuploadtarget. 1 day. */
 static constexpr std::chrono::seconds MAX_UPLOAD_TIMEFRAME{60 * 60 * 24};
+
+static const auto& metricsContainer = metrics::Instance();
 
 // We add a random period time (0 to 1 seconds) to feeler connections to prevent synchronization.
 #define FEELER_SLEEP_WINDOW 1
@@ -499,6 +503,7 @@ CNode* CConnman::ConnectNode(CAddress addrConnect, const char *pszDest, bool fCo
 void CNode::CloseSocketDisconnect()
 {
     fDisconnect = true;
+    metricsContainer->Net().IncConnection("close");
     LOCK(cs_hSocket);
     if (hSocket != INVALID_SOCKET)
     {
@@ -625,6 +630,7 @@ void CNode::copyStats(CNodeStats &stats, const std::vector<bool> &m_asmap)
 
 bool CNode::ReceiveMsgBytes(Span<const uint8_t> msg_bytes, bool& complete)
 {
+    static auto& netMetrics = metricsContainer->Net();
     complete = false;
     const auto time = GetTime<std::chrono::microseconds>();
     LOCK(cs_vRecv);
@@ -646,6 +652,7 @@ bool CNode::ReceiveMsgBytes(Span<const uint8_t> msg_bytes, bool& complete)
                 // Message deserialization failed.  Drop the message but don't disconnect the peer.
                 // store the size of the corrupt message
                 mapRecvBytesPerMsgCmd.find(NET_MESSAGE_COMMAND_OTHER)->second += out_err_raw_size;
+                netMetrics.BandwidthGauge(metrics::NetDirection::RX, "unknown",  out_err_raw_size);
                 continue;
             }
 
@@ -656,7 +663,7 @@ bool CNode::ReceiveMsgBytes(Span<const uint8_t> msg_bytes, bool& complete)
                 i = mapRecvBytesPerMsgCmd.find(NET_MESSAGE_COMMAND_OTHER);
             assert(i != mapRecvBytesPerMsgCmd.end());
             i->second += result->m_raw_message_size;
-
+            netMetrics.BandwidthGauge(metrics::NetDirection::RX, result->m_command, result->m_raw_message_size);
             // push the message to the process queue,
             vRecvMsg.push_back(std::move(*result));
 
@@ -1122,7 +1129,7 @@ void CConnman::CreateNodeFromAcceptedSocket(SOCKET hSocket,
 {
     int nInbound = 0;
     int nMaxInbound = nMaxConnections - m_max_outbound;
-
+    metricsContainer->Net().IncConnection("accept");
     AddWhitelistPermissionFlags(permissionFlags, addr);
     if (NetPermissions::HasFlag(permissionFlags, NetPermissionFlags::Implicit)) {
         NetPermissions::ClearFlag(permissionFlags, NetPermissionFlags::Implicit);
@@ -1296,6 +1303,8 @@ void CConnman::DisconnectNodes()
 
 void CConnman::NotifyNumConnectionsChanged()
 {
+    static auto& netMetrics = metricsContainer->Net();
+    static auto& peerMetrics = metricsContainer->Peer();
     size_t vNodesSize;
     {
         LOCK(cs_vNodes);
@@ -1305,6 +1314,122 @@ void CConnman::NotifyNumConnectionsChanged()
         nPrevNodeCount = vNodesSize;
         if(clientInterface)
             clientInterface->NotifyNumConnectionsChanged(vNodesSize);
+
+        // count various node attributes
+        uint fullNodes{0};
+        uint spvNodes{0};
+        uint inboundNodes{0};
+        uint outboundNodes{0};
+        uint ipv4Nodes{0};
+        uint ipv6Nodes{0};
+        uint torNodes{0};
+        uint i2pNodes{0};
+
+        uint nblockRelay{0};
+        uint nManual{0};
+        uint nFeeler{0};
+        uint nRelay{0};
+        uint nAddr{0};
+        uint nIn{0};
+
+        uint pNone{0};
+        uint pBloom{0};
+        uint pRelay{0};
+        uint pForce{0};
+        uint pDownload{0};
+        uint pNoBan{0};
+        uint pMempool{0};
+        uint pAddr{0};
+        uint pImplicit{0};
+        uint pAll{0};
+        for (CNode* pnode : vNodes)
+        {
+            if(pnode->fClient)
+                spvNodes++;
+            else
+                fullNodes++;
+            if(pnode->IsInboundConn())
+                inboundNodes++;
+            else
+                outboundNodes++;
+            if(pnode->addr.IsIPv4())
+                ipv4Nodes++;
+            if(pnode->addr.IsIPv6())
+                ipv6Nodes++;
+            if(pnode->addr.IsTor())
+                torNodes++;
+            if(pnode->addr.IsI2P())
+                i2pNodes++;
+
+            if (pnode->HasPermission(NetPermissionFlags::All)) {
+                pAll++;
+            } else {
+                if (pnode->HasPermission(NetPermissionFlags::None))
+                    pNone++;
+                if (pnode->HasPermission(NetPermissionFlags::BloomFilter))
+                    pBloom++;
+                if (pnode->HasPermission(NetPermissionFlags::Relay))
+                    pRelay++;
+                if (pnode->HasPermission(NetPermissionFlags::ForceRelay))
+                    pForce++;
+                if (pnode->HasPermission(NetPermissionFlags::Download))
+                    pDownload++;
+                if (pnode->HasPermission(NetPermissionFlags::Mempool))
+                    pMempool++;
+                if (pnode->HasPermission(NetPermissionFlags::Addr))
+                    pAddr++;
+                if (pnode->HasPermission(NetPermissionFlags::Implicit))
+                    pImplicit++;
+            }
+
+            switch (pnode->m_conn_type) {
+                case ConnectionType::BLOCK_RELAY:
+                    nblockRelay++;
+                    break;
+                case ConnectionType::MANUAL:
+                    nManual++;
+                    break;
+                case ConnectionType::FEELER:
+                    nFeeler++;
+                    break;
+                case ConnectionType::OUTBOUND_FULL_RELAY:
+                    nRelay++;
+                    break;
+                case ConnectionType::ADDR_FETCH:
+                    nAddr++;
+                    break;
+                case ConnectionType::INBOUND:
+                    nIn++;
+                    break;
+            }
+        }
+        netMetrics.ConnectionGauge(metrics::NetConnectionType::TOTAL, nPrevNodeCount);
+        netMetrics.ConnectionGauge(metrics::NetConnectionType::SPV, spvNodes);
+        netMetrics.ConnectionGauge(metrics::NetConnectionType::FULL, fullNodes);
+        netMetrics.ConnectionGauge(metrics::NetConnectionType::INBOUND, inboundNodes);
+        netMetrics.ConnectionGauge(metrics::NetConnectionType::OUTBOUND, outboundNodes);
+        netMetrics.ConnectionGauge(metrics::NetConnectionType::IPV4, ipv4Nodes);
+        netMetrics.ConnectionGauge(metrics::NetConnectionType::IPV6, ipv6Nodes);
+        netMetrics.ConnectionGauge(metrics::NetConnectionType::TOR, torNodes);
+        netMetrics.ConnectionGauge(metrics::NetConnectionType::I2P, i2pNodes);
+
+        peerMetrics.Permission(NetPermissionFlags::All, pAll);
+        peerMetrics.Permission(NetPermissionFlags::Implicit, pImplicit);
+        peerMetrics.Permission(NetPermissionFlags::Addr, pAddr);
+        peerMetrics.Permission(NetPermissionFlags::Mempool, pMempool);
+        peerMetrics.Permission(NetPermissionFlags::NoBan, pNoBan);
+        peerMetrics.Permission(NetPermissionFlags::Download, pDownload);
+        peerMetrics.Permission(NetPermissionFlags::ForceRelay, pForce);
+        peerMetrics.Permission(NetPermissionFlags::Relay, pRelay);
+        peerMetrics.Permission(NetPermissionFlags::BloomFilter, pBloom);
+        peerMetrics.Permission(NetPermissionFlags::None, pNone);
+
+        peerMetrics.ConnectionType(static_cast<int>(ConnectionType::ADDR_FETCH), nAddr);
+        peerMetrics.ConnectionType(static_cast<int>(ConnectionType::BLOCK_RELAY), nblockRelay);
+        peerMetrics.ConnectionType(static_cast<int>(ConnectionType::FEELER), nFeeler);
+        peerMetrics.ConnectionType(static_cast<int>(ConnectionType::INBOUND), nIn);
+        peerMetrics.ConnectionType(static_cast<int>(ConnectionType::MANUAL), nManual);
+        peerMetrics.ConnectionType(static_cast<int>(ConnectionType::OUTBOUND_FULL_RELAY), nRelay);
     }
 }
 
@@ -2228,6 +2353,7 @@ void CConnman::OpenNetworkConnection(const CAddress& addrConnect, bool fCountFai
     {
         LOCK(cs_vNodes);
         vNodes.push_back(pnode);
+        metricsContainer->Net().IncConnection("open");
     }
 }
 
@@ -2878,25 +3004,30 @@ bool CConnman::DisconnectNode(NodeId id)
 
 void CConnman::RecordBytesRecv(uint64_t bytes)
 {
+    static auto& netMetrics = metricsContainer->Net();
     LOCK(cs_totalBytesRecv);
     nTotalBytesRecv += bytes;
+    netMetrics.BandwidthGauge(metrics::NetDirection::RX, "total", bytes);
 }
 
 void CConnman::RecordBytesSent(uint64_t bytes)
 {
+    static auto& netMetrics = metricsContainer->Net();
     LOCK(cs_totalBytesSent);
     nTotalBytesSent += bytes;
-
-    const auto now = GetTime<std::chrono::seconds>();
-    if (nMaxOutboundCycleStartTime + MAX_UPLOAD_TIMEFRAME < now)
-    {
-        // timeframe expired, reset cycle
-        nMaxOutboundCycleStartTime = now;
-        nMaxOutboundTotalBytesSentInCycle = 0;
+    netMetrics.BandwidthGauge(metrics::NetDirection::TX, "total", bytes);
+    if (nMaxOutboundLimit) {
+        const auto now = GetTime<std::chrono::seconds>();
+        if (nMaxOutboundCycleStartTime + MAX_UPLOAD_TIMEFRAME < now)
+        {
+            // timeframe expired, reset cycle
+            nMaxOutboundCycleStartTime = now;
+            netMetrics.MaxOutboundStartTime(now.count());
+            nMaxOutboundTotalBytesSentInCycle = 0;
+        }
+        nMaxOutboundTotalBytesSentInCycle += bytes;
+        netMetrics.MaxOutbound(nMaxOutboundTotalBytesSentInCycle);
     }
-
-    // TODO, exclude peers with download permission
-    nMaxOutboundTotalBytesSentInCycle += bytes;
 }
 
 uint64_t CConnman::GetMaxOutboundTarget() const
@@ -3016,8 +3147,12 @@ bool CConnman::NodeFullyConnected(const CNode* pnode)
 
 void CConnman::PushMessage(CNode* pnode, CSerializedNetMsg&& msg)
 {
+    static auto& netMetrics = metricsContainer->Net();
+    static auto& peerMetrics = metricsContainer->Peer();
+    auto msg_sanitized = SanitizeString(msg.m_type);
     size_t nMessageSize = msg.data.size();
-    LogPrint(BCLog::NET, "sending %s (%d bytes) peer=%d\n",  SanitizeString(msg.m_type), nMessageSize, pnode->GetId());
+    peerMetrics.PushMsgType(msg_sanitized);
+    LogPrint(BCLog::NET, "sending %s (%d bytes) peer=%d\n", msg_sanitized, nMessageSize, pnode->GetId());
     if (gArgs.GetBoolArg("-capturemessages", false)) {
         CaptureMessage(pnode->addr, msg.m_type, msg.data, /* incoming */ false);
     }
@@ -3034,6 +3169,7 @@ void CConnman::PushMessage(CNode* pnode, CSerializedNetMsg&& msg)
 
         //log total amount of bytes per message type
         pnode->mapSendBytesPerMsgCmd[msg.m_type] += nTotalSize;
+        netMetrics.BandwidthGauge(metrics::NetDirection::TX, msg.m_type, nTotalSize);
         pnode->nSendSize += nTotalSize;
 
         if (pnode->nSendSize > nSendBufferMaxSize) pnode->fPauseSend = true;

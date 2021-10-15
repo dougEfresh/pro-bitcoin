@@ -38,6 +38,8 @@
 #include <thread>
 #include <vector>
 
+#include <metrics/metrics.h>
+
 class CScheduler;
 class CNode;
 class BanMan;

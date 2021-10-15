@@ -118,13 +118,19 @@ AC_ARG_ENABLE([wallet],
   [AS_HELP_STRING([--disable-wallet],
   [disable wallet (enabled by default)])],
   [enable_wallet=$enableval],
-  [enable_wallet=auto])
+  [enable_wallet=no])
 
 AC_ARG_WITH([sqlite],
   [AS_HELP_STRING([--with-sqlite=yes|no|auto],
   [enable sqlite wallet support (default: auto, i.e., enabled if wallet is enabled and sqlite is found)])],
   [use_sqlite=$withval],
   [use_sqlite=auto])
+
+AC_ARG_WITH([prometheus],
+  [AS_HELP_STRING([--with-prometheus=yes|no|auto],
+  [enable prometheus])],
+  [use_prometheus=$withval],
+  [use_prometheus=yes])
 
 AC_ARG_WITH([bdb],
   [AS_HELP_STRING([--without-bdb],
@@ -165,12 +171,12 @@ AC_ARG_ENABLE([natpmp-default],
 AC_ARG_ENABLE(tests,
     AS_HELP_STRING([--disable-tests],[do not compile tests (default is to compile)]),
     [use_tests=$enableval],
-    [use_tests=yes])
+    [use_tests=no])
 
 AC_ARG_ENABLE(gui-tests,
     AS_HELP_STRING([--disable-gui-tests],[do not compile GUI tests (default is to compile if GUI and tests enabled)]),
     [use_gui_tests=$enableval],
-    [use_gui_tests=$use_tests])
+    [use_gui_tests=no])
 
 AC_ARG_ENABLE(bench,
     AS_HELP_STRING([--disable-bench],[do not compile benchmarks (default is to compile)]),
@@ -198,7 +204,7 @@ AC_ARG_WITH([qrencode],
   [AS_HELP_STRING([--with-qrencode],
   [enable QR code support (default is yes if qt is enabled and libqrencode is found)])],
   [use_qr=$withval],
-  [use_qr=auto])
+  [use_qr=no])
 
 AC_ARG_ENABLE([hardening],
   [AS_HELP_STRING([--disable-hardening],
@@ -587,9 +593,9 @@ CPPFLAGS="$CPPFLAGS -DHAVE_BUILD_INFO -D__STDC_FORMAT_MACROS"
 
 AC_ARG_WITH([utils],
   [AS_HELP_STRING([--with-utils],
-  [build bitcoin-cli bitcoin-tx bitcoin-util bitcoin-wallet (default=yes)])],
+  [build bitcoin-cli bitcoin-tx bitcoin-util bitcoin-wallet (default=no)])],
   [build_bitcoin_utils=$withval],
-  [build_bitcoin_utils=yes])
+  [build_bitcoin_utils=no])
 
 AC_ARG_ENABLE([util-cli],
   [AS_HELP_STRING([--enable-util-cli],
@@ -617,9 +623,9 @@ AC_ARG_ENABLE([util-util],
 
 AC_ARG_WITH([libs],
   [AS_HELP_STRING([--with-libs],
-  [build libraries (default=yes)])],
+  [build libraries (default=no)])],
   [build_bitcoin_libs=$withval],
-  [build_bitcoin_libs=yes])
+  [build_bitcoin_libs=no])
 
 AC_ARG_WITH([daemon],
   [AS_HELP_STRING([--with-daemon],
@@ -1309,6 +1315,10 @@ else
   CPPFLAGS="$CPPFLAGS -DPROVIDE_FUZZ_MAIN_FUNCTION"
 fi
 
+
+PKG_CHECK_MODULES([PROMETHEUS], [prometheus-cpp-core >= 0.12.0, prometheus-cpp-pull >= 0.12.0], [use_prometheus=yes], [AC_MSG_ERROR([libprometheus-cpp-core version 0.12.0 or greater not found.])])
+PKG_CHECK_MODULES([ZLIB], [zlib], [use_prometheus=yes], [AC_MSG_ERROR([libz (zlib) not found.])])
+
 if test x$enable_wallet != xno; then
     dnl Check for libdb_cxx only if wallet enabled
     if test "x$use_bdb" != "xno"; then
@@ -1836,6 +1846,8 @@ AC_SUBST(USE_UPNP)
 AC_SUBST(USE_QRCODE)
 AC_SUBST(BOOST_LIBS)
 AC_SUBST(SQLITE_LIBS)
+AC_SUBST(PROMETHEUS_LIBS)
+AC_SUBST(ZLIB_LIBS)
 AC_SUBST(TESTDEFS)
 AC_SUBST(MINIUPNPC_CPPFLAGS)
 AC_SUBST(MINIUPNPC_LIBS)

@@ -51,6 +51,10 @@
 #include <memory>
 #include <mutex>
 
+#include <metrics/metrics.h>
+
+static const auto& metricsContainer = metrics::Instance();
+
 struct CUpdatedBlock
 {
     uint256 hash;
@@ -1183,6 +1187,11 @@ static RPCHelpMan gettxoutsetinfo()
         ret.pushKV("bestblock", stats.hashBlock.GetHex());
         ret.pushKV("txouts", (int64_t)stats.nTransactionOutputs);
         ret.pushKV("bogosize", (int64_t)stats.nBogoSize);
+        //metricsContainer->Utxo().Total((double)stats.nTransactions);
+        //metricsContainer->Utxo().Outputs((double)stats.nTransactionOutputs);
+        //metricsContainer->Utxo().BlockHeight((double)stats.nHeight);
+        //metricsContainer->Utxo().DbSize((double)stats.nDiskSize);
+        //metricsContainer->Utxo().BtcAmount((double)stats.nTotalAmount / (double)COIN);
         if (hash_type == CoinStatsHashType::HASH_SERIALIZED) {
             ret.pushKV("hash_serialized_2", stats.hashSerialized.GetHex());
         }

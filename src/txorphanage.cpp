@@ -15,6 +15,8 @@ static constexpr int64_t ORPHAN_TX_EXPIRE_TIME = 20 * 60;
 /** Minimum time between orphan transactions expire time checks in seconds */
 static constexpr int64_t ORPHAN_TX_EXPIRE_INTERVAL = 5 * 60;
 
+static const auto& metricsContainer = metrics::Instance();
+
 RecursiveMutex g_cs_orphans;
 
 bool TxOrphanage::AddTx(const CTransactionRef& tx, NodeId peer)
@@ -50,6 +52,8 @@ bool TxOrphanage::AddTx(const CTransactionRef& tx, NodeId peer)
 
     LogPrint(BCLog::MEMPOOL, "stored orphan tx %s (mapsz %u outsz %u)\n", hash.ToString(),
              m_orphans.size(), m_outpoint_to_orphan_it.size());
+    metricsContainer->Tx().IncOrphanAdd();
+    metricsContainer->MemPool().Orphans(m_orphans.size(), m_outpoint_to_orphan_it.size());
     return true;
 }
 
@@ -82,6 +86,8 @@ int TxOrphanage::EraseTx(const uint256& txid)
     m_wtxid_to_orphan_it.erase(it->second.tx->GetWitnessHash());
 
     m_orphans.erase(it);
+    metricsContainer->Tx().IncOrphanRemove();
+    metricsContainer->MemPool().Orphans(m_orphans.size(), m_outpoint_to_orphan_it.size());
     return 1;
 }
 

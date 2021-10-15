@@ -6,6 +6,7 @@
 
 #include <primitives/transaction.h>
 #include <consensus/validation.h>
+#include <boost/thread.hpp>
 
 bool CheckTransaction(const CTransaction& tx, TxValidationState& state)
 {

@@ -175,6 +175,7 @@ BITCOIN_CORE_H = \
   mapport.h \
   memusage.h \
   merkleblock.h \
+  metrics/metrics.h \
   miner.h \
   net.h \
   net_permissions.h \
@@ -341,6 +342,13 @@ libbitcoin_server_a_SOURCES = \
   init.cpp \
   mapport.cpp \
   miner.cpp \
+  metrics/metrics.cpp \
+  metrics/block.cpp \
+  metrics/mempool.cpp \
+  metrics/net.cpp \
+  metrics/peer.cpp \
+  metrics/tx.cpp \
+  metrics/utxo.cpp \
   net.cpp \
   net_processing.cpp \
   node/blockstorage.cpp \
@@ -657,7 +665,7 @@ bitcoin_bin_ldadd = \
   $(LIBMEMENV) \
   $(LIBSECP256K1)
 
-bitcoin_bin_ldadd += $(BOOST_LIBS) $(BDB_LIBS) $(MINIUPNPC_LIBS) $(NATPMP_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(ZMQ_LIBS) $(SQLITE_LIBS)
+bitcoin_bin_ldadd += $(BOOST_LIBS) $(BDB_LIBS) $(MINIUPNPC_LIBS) $(NATPMP_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(ZMQ_LIBS) $(SQLITE_LIBS) $(PROMETHEUS_LIBS) $(ZLIB_LIBS)
 
 bitcoind_SOURCES = $(bitcoin_daemon_sources) init/bitcoind.cpp
 bitcoind_CPPFLAGS = $(bitcoin_bin_cppflags)

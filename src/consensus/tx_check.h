@@ -5,6 +5,8 @@
 #ifndef BITCOIN_CONSENSUS_TX_CHECK_H
 #define BITCOIN_CONSENSUS_TX_CHECK_H
 
+#include <metrics/metrics.h>
+
 /**
  * Context-independent transaction checking code that can be called outside the
  * bitcoin server and doesn't depend on chain or mempool state. Transaction
