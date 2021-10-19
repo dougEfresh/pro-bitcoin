@@ -31,6 +31,7 @@
 #include <script/signingprovider.h>
 #include <script/standard.h>
 #include <uint256.h>
+#include <undo.h>
 #include <util/bip32.h>
 #include <util/moneystr.h>
 #include <util/strencodings.h>
@@ -43,14 +44,14 @@
 
 #include <univalue.h>
 
-static void TxToJSON(const CTransaction& tx, const uint256 hashBlock, UniValue& entry, CChainState& active_chainstate)
+static void TxToJSON(const CTransaction& tx, const uint256 hashBlock, UniValue& entry, CChainState& active_chainstate, const CTxUndo* txundo = nullptr)
 {
     // Call into TxToUniv() in bitcoin-common to decode the transaction hex.
     //
     // Blockchain contextual information (confirmations and blocktime) is not
     // available to code in bitcoin-common, so we query them here and push the
     // data into the returned UniValue.
-    TxToUniv(tx, uint256(), entry, true, RPCSerializationFlags());
+    TxToUniv(tx, uint256(), entry, true, RPCSerializationFlags(), txundo);
 
     if (!hashBlock.IsNull()) {
         LOCK(cs_main);
@@ -211,8 +212,29 @@ static RPCHelpMan getrawtransaction()
     }
 
     UniValue result(UniValue::VOBJ);
-    if (blockindex) result.pushKV("in_active_chain", in_active_chain);
-    TxToJSON(*tx, hash_block, result, chainman.ActiveChainstate());
+    if (!blockindex) {
+        TxToJSON(*tx, hash_block, result, chainman.ActiveChainstate());
+        return result;
+    }
+    result.pushKV("in_active_chain", in_active_chain);
+
+    std::optional<size_t>  optIndex{std::nullopt};
+    CBlockUndo blockUndo;
+    CBlock block;
+
+    if (! (!IsBlockPruned(blockindex) && UndoReadFromDisk(blockUndo, blockindex) && ReadBlockFromDisk(block, blockindex, Params().GetConsensus()))) {
+        TxToJSON(*tx, hash_block, result, chainman.ActiveChainstate());
+        return result;
+    }
+    for (size_t i = 0; i < block.vtx.size(); ++i) {
+        const CTransactionRef t = block.vtx.at(i);
+        if (*t == *tx) {
+            // blockundo does not have coin ase tx
+            optIndex = std::optional<size_t>{i-1};
+            break;
+        }
+    }
+    TxToJSON(*tx, hash_block, result, chainman.ActiveChainstate(), optIndex ? &blockUndo.vtxundo.at(*optIndex) : nullptr);
     return result;
 },
     };
