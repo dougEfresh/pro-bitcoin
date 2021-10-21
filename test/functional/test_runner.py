@@ -26,7 +26,6 @@ import tempfile
 import re
 import logging
 import unittest
-from test_framework.util import assert_greater_than_or_equal
 
 # Formatting. Default colors to empty strings.
 BOLD, GREEN, RED, GREY = ("", ""), ("", ""), ("", ""), ("", "")
@@ -601,7 +600,7 @@ class TestHandler:
     """
 
     def __init__(self, *, num_tests_parallel, tests_dir, tmpdir, test_list, flags, use_term_control):
-        assert_greater_than_or_equal(num_tests_parallel, 1)
+        assert num_tests_parallel >= 1
         self.num_jobs = num_tests_parallel
         self.tests_dir = tests_dir
         self.tmpdir = tmpdir
