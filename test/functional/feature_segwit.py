@@ -204,15 +204,15 @@ class SegWitTest(BitcoinTestFramework):
 
         self.log.info("Verify block and transaction serialization rpcs return differing serializations depending on rpc serialization flag")
         assert self.nodes[2].getblock(blockhash, False) != self.nodes[0].getblock(blockhash, False)
-        assert self.nodes[1].getblock(blockhash, False) == self.nodes[2].getblock(blockhash, False)
+        assert_equal(self.nodes[1].getblock(blockhash, False), self.nodes[2].getblock(blockhash, False))
 
         for tx_id in segwit_tx_list:
             tx = tx_from_hex(self.nodes[2].gettransaction(tx_id)["hex"])
             assert self.nodes[2].getrawtransaction(tx_id, False, blockhash) != self.nodes[0].getrawtransaction(tx_id, False, blockhash)
-            assert self.nodes[1].getrawtransaction(tx_id, False, blockhash) == self.nodes[2].getrawtransaction(tx_id, False, blockhash)
+            assert_equal(self.nodes[1].getrawtransaction(tx_id, False, blockhash), self.nodes[2].getrawtransaction(tx_id, False, blockhash))
             assert self.nodes[0].getrawtransaction(tx_id, False, blockhash) != self.nodes[2].gettransaction(tx_id)["hex"]
-            assert self.nodes[1].getrawtransaction(tx_id, False, blockhash) == self.nodes[2].gettransaction(tx_id)["hex"]
-            assert self.nodes[0].getrawtransaction(tx_id, False, blockhash) == tx.serialize_without_witness().hex()
+            assert_equal(self.nodes[1].getrawtransaction(tx_id, False, blockhash), self.nodes[2].gettransaction(tx_id)["hex"])
+            assert_equal(self.nodes[0].getrawtransaction(tx_id, False, blockhash), tx.serialize_without_witness().hex())
 
         # Coinbase contains the witness commitment nonce, check that RPC shows us
         coinbase_txid = self.nodes[2].getblock(blockhash)['tx'][0]

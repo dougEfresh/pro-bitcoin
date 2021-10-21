@@ -110,13 +110,13 @@ class ToolWalletTest(BitcoinTestFramework):
     def assert_is_sqlite(self, filename):
         with open(filename, 'rb') as f:
             file_magic = f.read(16)
-            assert file_magic == b'SQLite format 3\x00'
+            assert_equal(file_magic, b'SQLite format 3\x00')
 
     def assert_is_bdb(self, filename):
         with open(filename, 'rb') as f:
             f.seek(12, 0)
             file_magic = f.read(4)
-            assert file_magic == b'\x00\x05\x31\x62' or file_magic == b'\x62\x31\x05\x00'
+            assert_equal(file_magic == b'\x00\x05\x31\x62' or file_magic, b'\x62\x31\x05\x00')
 
     def write_dump(self, dump, filename, magic=None, skip_checksum=False):
         if magic is None:

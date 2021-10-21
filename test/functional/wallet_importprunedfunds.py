@@ -91,13 +91,13 @@ class ImportPrunedFundsTest(BitcoinTestFramework):
         wwatch = self.nodes[1].get_wallet_rpc('wwatch')
         wwatch.importaddress(address=address2, rescan=False)
         wwatch.importprunedfunds(rawtransaction=rawtxn2, txoutproof=proof2)
-        assert [tx for tx in wwatch.listtransactions(include_watchonly=True) if tx['txid'] == txnid2]
+        assert_equal([tx for tx in wwatch.listtransactions(include_watchonly=True) if tx['txid'], txnid2])
 
         # Import with private key with no rescan
         w1 = self.nodes[1].get_wallet_rpc(self.default_wallet_name)
         w1.importprivkey(privkey=address3_privkey, rescan=False)
         w1.importprunedfunds(rawtxn3, proof3)
-        assert [tx for tx in w1.listtransactions() if tx['txid'] == txnid3]
+        assert_equal([tx for tx in w1.listtransactions() if tx['txid'], txnid3])
         balance3 = w1.getbalance()
         assert_equal(balance3, Decimal('0.025'))
 
@@ -118,13 +118,13 @@ class ImportPrunedFundsTest(BitcoinTestFramework):
 
         # Remove transactions
         assert_raises_rpc_error(-8, "Transaction does not exist in wallet.", w1.removeprunedfunds, txnid1)
-        assert not [tx for tx in w1.listtransactions(include_watchonly=True) if tx['txid'] == txnid1]
+        assert_equal(not [tx for tx in w1.listtransactions(include_watchonly=True) if tx['txid'], txnid1])
 
         wwatch.removeprunedfunds(txnid2)
-        assert not [tx for tx in wwatch.listtransactions(include_watchonly=True) if tx['txid'] == txnid2]
+        assert_equal(not [tx for tx in wwatch.listtransactions(include_watchonly=True) if tx['txid'], txnid2])
 
         w1.removeprunedfunds(txnid3)
-        assert not [tx for tx in w1.listtransactions(include_watchonly=True) if tx['txid'] == txnid3]
+        assert_equal(not [tx for tx in w1.listtransactions(include_watchonly=True) if tx['txid'], txnid3])
 
 if __name__ == '__main__':
     ImportPrunedFundsTest().main()

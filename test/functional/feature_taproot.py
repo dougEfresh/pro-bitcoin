@@ -735,7 +735,7 @@ def spenders_taproot_active():
             for witlen in [20, 31, 32, 33]:
                 def mutate(spk):
                     prog = spk[2:]
-                    assert len(prog) == 32
+                    assert_equal(len(prog), 32)
                     if witlen < 32:
                         prog = prog[0:witlen]
                     elif witlen > 32:
@@ -1246,13 +1246,13 @@ class TaprootTest(BitcoinTestFramework):
         if err_msg is not None:
             assert block_response is not None and err_msg in block_response, "Missing error message '%s' from block response '%s': %s" % (err_msg, "(None)" if block_response is None else block_response, msg)
         if accept:
-            assert node.getbestblockhash() == block.hash, "Failed to accept: %s (response: %s)" % (msg, block_response)
+            assert_equal(node.getbestblockhash(), block.hash, "Failed to accept: %s (response: %s)" % (msg, block_response))
             self.tip = block.sha256
             self.lastblockhash = block.hash
             self.lastblocktime += 1
             self.lastblockheight += 1
         else:
-            assert node.getbestblockhash() == self.lastblockhash, "Failed to reject: " + msg
+            assert_equal(node.getbestblockhash(), self.lastblockhash, "Failed to reject: " + msg)
 
     def test_spenders(self, node, spenders, input_counts):
         """Run randomized tests with a number of "spenders".
@@ -1345,7 +1345,7 @@ class TaprootTest(BitcoinTestFramework):
         self.log.info("- Running %i spending tests" % done)
         random.shuffle(normal_utxos)
         random.shuffle(mismatching_utxos)
-        assert done == len(normal_utxos) + len(mismatching_utxos)
+        assert_equal(done, len(normal_utxos) + len(mismatching_utxos))
 
         left = done
         while left:
@@ -1384,7 +1384,7 @@ class TaprootTest(BitcoinTestFramework):
             for i in range(len(input_utxos)):
                 if input_utxos[i].spender.need_vin_vout_mismatch:
                     first_mismatch_input = i
-            assert first_mismatch_input is None or first_mismatch_input > 0
+            assert_greater_than(first_mismatch_input is None or first_mismatch_input, 0)
 
             # Decide fee, and add CTxIns to tx.
             amount = sum(utxo.output.nValue for utxo in input_utxos)
@@ -1397,7 +1397,7 @@ class TaprootTest(BitcoinTestFramework):
 
             # Add 1 to 4 random outputs (but constrained by inputs that require mismatching outputs)
             num_outputs = random.choice(range(1, 1 + min(4, 4 if first_mismatch_input is None else first_mismatch_input)))
-            assert in_value >= 0 and fee - num_outputs * DUST_LIMIT >= MIN_FEE
+            assert_greater_than_or_equal(in_value >= 0 and fee - num_outputs * DUST_LIMIT, MIN_FEE)
             for i in range(num_outputs):
                 tx.vout.append(CTxOut())
                 if in_value <= DUST_LIMIT:
@@ -1410,7 +1410,7 @@ class TaprootTest(BitcoinTestFramework):
                 tx.vout[-1].scriptPubKey = random.choice(host_spks)
                 sigops_weight += CScript(tx.vout[-1].scriptPubKey).GetSigOpCount(False) * WITNESS_SCALE_FACTOR
             fee += in_value
-            assert fee >= 0
+            assert_greater_than_or_equal(fee, 0)
 
             # Select coinbase pubkey
             cb_pubkey = random.choice(host_pubkeys)
@@ -1454,9 +1454,9 @@ class TaprootTest(BitcoinTestFramework):
             if (len(spenders) - left) // 200 > (len(spenders) - left - len(input_utxos)) // 200:
                 self.log.info("  - %i tests done" % (len(spenders) - left))
 
-        assert left == 0
-        assert len(normal_utxos) == 0
-        assert len(mismatching_utxos) == 0
+        assert_equal(left, 0)
+        assert_equal(len(normal_utxos), 0)
+        assert_equal(len(mismatching_utxos), 0)
         self.log.info("  - Done")
 
     def run_test(self):
