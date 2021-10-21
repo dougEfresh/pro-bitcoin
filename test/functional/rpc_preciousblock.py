@@ -14,7 +14,7 @@ def unidirectional_node_sync_via_rpc(node_src, node_dest):
     blockhash = node_src.getbestblockhash()
     while True:
         try:
-            assert len(node_dest.getblock(blockhash, False)) > 0
+            assert_greater_than(len(node_dest.getblock(blockhash, False)), 0)
             break
         except:
             blocks_to_copy.append(blockhash)

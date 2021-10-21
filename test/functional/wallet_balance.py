@@ -30,7 +30,7 @@ def create_transactions(node, address, amt, fees):
         if ins_total >= amt + max(fees):
             break
     # make sure there was enough utxos
-    assert ins_total >= amt + max(fees)
+    assert_greater_than_or_equal(ins_total, amt + max(fees))
 
     txs = []
     for fee in fees:

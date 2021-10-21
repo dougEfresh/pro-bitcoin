@@ -175,7 +175,7 @@ class RawTransactionsTest(BitcoinTestFramework):
         dec_tx  = self.nodes[2].decoderawtransaction(rawtx)
         rawtxfund = self.nodes[2].fundrawtransaction(rawtx)
         dec_tx  = self.nodes[2].decoderawtransaction(rawtxfund['hex'])
-        assert len(dec_tx['vin']) > 0  #test that we have enough inputs
+        assert_greater_than(len(dec_tx['vin']), 0)  #test that we have enough inputs
 
     def test_simple_two_coins(self):
         self.log.info("Test fundrawtxn with 2 coins")
@@ -186,7 +186,7 @@ class RawTransactionsTest(BitcoinTestFramework):
 
         rawtxfund = self.nodes[2].fundrawtransaction(rawtx)
         dec_tx  = self.nodes[2].decoderawtransaction(rawtxfund['hex'])
-        assert len(dec_tx['vin']) > 0  #test if we have enough inputs
+        assert_greater_than(len(dec_tx['vin']), 0)  #test if we have enough inputs
         assert_equal(dec_tx['vin'][0]['scriptSig']['hex'], '')
 
     def test_simple_two_outputs(self):
@@ -203,7 +203,7 @@ class RawTransactionsTest(BitcoinTestFramework):
         for out in dec_tx['vout']:
             totalOut += out['value']
 
-        assert len(dec_tx['vin']) > 0
+        assert_greater_than(len(dec_tx['vin']), 0)
         assert_equal(dec_tx['vin'][0]['scriptSig']['hex'], '')
 
     def test_change(self):
@@ -747,7 +747,7 @@ class RawTransactionsTest(BitcoinTestFramework):
         result = wwatch.fundrawtransaction(rawtx, {'includeWatching': True, 'changeAddress': w3.getrawchangeaddress(), 'subtractFeeFromOutputs': [0]})
         res_dec = self.nodes[0].decoderawtransaction(result["hex"])
         assert_equal(len(res_dec["vin"]), 1)
-        assert res_dec["vin"][0]["txid"] == self.watchonly_txid
+        assert_equal(res_dec["vin"][0]["txid"], self.watchonly_txid)
 
         assert_greater_than(result["fee"], 0)
         assert_equal(result["changepos"], -1)

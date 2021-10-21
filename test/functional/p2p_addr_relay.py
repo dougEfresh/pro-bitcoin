@@ -289,7 +289,7 @@ class AddrTest(BitcoinTestFramework):
 
         assert_equal(full_outbound_peer.num_ipv4_received, 0)
         assert_equal(block_relay_peer.num_ipv4_received, 0)
-        assert inbound_peer.num_ipv4_received > 100
+        assert_greater_than(inbound_peer.num_ipv4_received, 100)
 
         self.nodes[0].disconnect_p2ps()
 

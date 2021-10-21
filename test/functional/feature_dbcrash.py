@@ -276,7 +276,7 @@ class ChainstateWriteCrashTest(BitcoinTestFramework):
         assert self.restart_counts != [0, 0, 0]
 
         # Make sure we tested the case of crash-during-recovery.
-        assert self.crashed_on_restart > 0
+        assert_greater_than(self.crashed_on_restart, 0)
 
         # Warn if any of the nodes escaped restart.
         for i in range(3):

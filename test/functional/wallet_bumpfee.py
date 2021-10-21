@@ -175,11 +175,11 @@ def test_simple_bumpfee_succeeds(self, mode, rbf_node, peer_node, dest_address):
         bumped_psbt = rbf_node.psbtbumpfee(rbfid)
         bumped_tx = rbf_node.bumpfee(rbfid)
     assert_equal(bumped_tx["errors"], [])
-    assert bumped_tx["fee"] > -rbftx["fee"]
+    assert_greater_than(bumped_tx["fee"], -rbftx["fee"])
     assert_equal(bumped_tx["origfee"], -rbftx["fee"])
     assert "psbt" not in bumped_tx
     assert_equal(bumped_psbt["errors"], [])
-    assert bumped_psbt["fee"] > -rbftx["fee"]
+    assert_greater_than(bumped_psbt["fee"], -rbftx["fee"])
     assert_equal(bumped_psbt["origfee"], -rbftx["fee"])
     assert "psbt" in bumped_psbt
     # check that bumped_tx propagates, original tx was evicted and has a wallet conflict
@@ -189,7 +189,7 @@ def test_simple_bumpfee_succeeds(self, mode, rbf_node, peer_node, dest_address):
     assert rbfid not in rbf_node.getrawmempool()
     assert rbfid not in peer_node.getrawmempool()
     oldwtx = rbf_node.gettransaction(rbfid)
-    assert len(oldwtx["walletconflicts"]) > 0
+    assert_greater_than(len(oldwtx["walletconflicts"]), 0)
     # check wallet transaction replaces and replaced_by values
     bumpedwtx = rbf_node.gettransaction(bumped_tx["txid"])
     assert_equal(oldwtx["replaced_by_txid"], bumped_tx["txid"])
