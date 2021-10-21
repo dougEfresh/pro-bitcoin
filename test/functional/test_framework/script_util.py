@@ -3,6 +3,7 @@
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """Useful Script constants and utils."""
+from test.functional.test_framework.util import assert_greater_than, assert_greater_than_or_equal, assert_less_than_or_equal
 from test_framework.script import (
     CScript,
     OP_0,
@@ -70,8 +71,10 @@ def key_to_p2sh_p2wpkh_script(key):
 def program_to_witness_script(version, program):
     if isinstance(program, str):
         program = bytes.fromhex(program)
-    assert 0 <= version <= 16
-    assert 2 <= len(program) <= 40
+    assert_greater_than_or_equal(version, 0)
+    assert_less_than_or_equal(version, 16)
+    assert_greater_than_or_equal(len(program), 2)
+    assert_less_than_or_equal(len(program), 40)
     assert version > 0 or len(program) in [20, 32]
     return CScript([version, program])
 

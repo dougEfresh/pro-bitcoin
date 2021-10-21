@@ -72,6 +72,8 @@ from test_framework.messages import (
 )
 from test_framework.util import (
     MAX_NODES,
+    assert_greater_than,
+    assert_less_than_or_equal,
     p2p_port,
     wait_until_helper,
 )
@@ -601,7 +603,8 @@ class NetworkThread(threading.Thread):
         for connections, call `callback`."""
 
         if port is None:
-            assert 0 < idx <= MAX_NODES
+            assert_greater_than(idx, 0)
+            assert_less_than_or_equal(idx, MAX_NODES)
             port = p2p_port(MAX_NODES - idx)
         if addr is None:
             addr = '127.0.0.1'

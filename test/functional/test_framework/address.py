@@ -12,7 +12,7 @@ import unittest
 
 from .script import hash256, hash160, sha256, CScript, OP_0
 from .segwit_addr import encode_segwit_address
-from .util import assert_equal
+from .util import assert_equal, assert_greater_than_or_equal, assert_less_than_or_equal
 
 ADDRESS_BCRT1_UNSPENDABLE = 'bcrt1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3xueyj'
 ADDRESS_BCRT1_UNSPENDABLE_DESCRIPTOR = 'addr(bcrt1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3xueyj)#juyq9d97'
@@ -101,8 +101,10 @@ def key_to_p2sh_p2wpkh(key, main=False):
 def program_to_witness(version, program, main=False):
     if (type(program) is str):
         program = bytes.fromhex(program)
-    assert 0 <= version <= 16
-    assert 2 <= len(program) <= 40
+    assert_greater_than_or_equal(version, 0)
+    assert_less_than_or_equal(version, 16)
+    assert_greater_than_or_equal(len(program), 0)
+    assert_less_than_or_equal(len(program), 40)
     assert version > 0 or len(program) in [20, 32]
     return encode_segwit_address("bc" if main else "bcrt", version, program)
 
