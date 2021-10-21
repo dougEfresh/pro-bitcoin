@@ -26,6 +26,7 @@ import tempfile
 import re
 import logging
 import unittest
+from test_framework.util import assert_greater_than_or_equal
 
 # Formatting. Default colors to empty strings.
 BOLD, GREEN, RED, GREY = ("", ""), ("", ""), ("", ""), ("", "")
