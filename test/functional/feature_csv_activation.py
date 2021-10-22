@@ -53,6 +53,7 @@ from test_framework.script import (
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import (
     assert_equal,
+    assert_greater_than_or_equal,
     softfork_active,
 )
 from test_framework.wallet import (

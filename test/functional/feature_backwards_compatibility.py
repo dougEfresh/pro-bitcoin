@@ -27,6 +27,7 @@ from test_framework.descriptors import descsum_create
 
 from test_framework.util import (
     assert_equal,
+    assert_greater_than,
     assert_raises_rpc_error,
 )
 

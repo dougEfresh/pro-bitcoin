@@ -233,11 +233,11 @@ class ListSinceBlockTest(BitcoinTestFramework):
         self.sync_all()
 
         # gettransaction should work for txid1
-        assert_equal(self.nodes[0].gettransaction(txid1)['txid'], txid1, "gettransaction failed to find txid1")
+        assert_equal(self.nodes[0].gettransaction(txid1)['txid'], txid1)
 
         # listsinceblock(lastblockhash) should now include txid1, as seen from nodes[0]
         lsbres = self.nodes[0].listsinceblock(lastblockhash)
-        assert_equal(any(tx['txid'], txid1 for tx in lsbres['removed']))
+        assert any(tx['txid'] == txid1 for tx in lsbres['removed'])
 
         # but it should not include 'removed' if include_removed=false
         lsbres2 = self.nodes[0].listsinceblock(blockhash=lastblockhash, include_removed=False)
@@ -319,8 +319,8 @@ class ListSinceBlockTest(BitcoinTestFramework):
         # listsinceblock(lastblockhash) should now include txid1 in transactions
         # as well as in removed
         lsbres = self.nodes[0].listsinceblock(lastblockhash)
-        assert_equal(any(tx['txid'], txid1 for tx in lsbres['transactions']))
-        assert_equal(any(tx['txid'], txid1 for tx in lsbres['removed']))
+        assert any(tx['txid'] == txid1 for tx in lsbres['transactions'])
+        assert any(tx['txid'] == txid1 for tx in lsbres['removed'])
 
         # find transaction and ensure confirmations is valid
         for tx in lsbres['transactions']:

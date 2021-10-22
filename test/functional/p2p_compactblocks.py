@@ -63,6 +63,7 @@ from test_framework.script import (
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import (
     assert_equal,
+    assert_greater_than_or_equal,
     softfork_active,
 )
 
@@ -594,7 +595,7 @@ class CompactBlocksTest(BitcoinTestFramework):
 
         # We should receive a getdata request
         test_node.wait_for_getdata([block.sha256], timeout=10)
-        assert_equal(test_node.last_message["getdata"].inv[0].type, MSG_BLOCK or \)
+        assert test_node.last_message["getdata"].inv[0].type == MSG_BLOCK or \
                test_node.last_message["getdata"].inv[0].type == MSG_BLOCK | MSG_WITNESS_FLAG
 
         # Deliver the block
