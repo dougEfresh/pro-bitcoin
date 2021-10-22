@@ -50,7 +50,7 @@ from test_framework.script_util import (
     script_to_p2sh_script,
 )
 from test_framework.test_framework import BitcoinTestFramework
-from test_framework.util import assert_equal, assert_less_than
+from test_framework.util import assert_equal, assert_less_than, assert_less_than_or_equal
 from data import invalid_txs
 
 #  Use this class for tests that require behavior other than normal p2p behavior.
@@ -525,7 +525,7 @@ class FullBlockTest(BitcoinTestFramework):
         b40 = self.next_block(40, spend=out[12])
         sigops = get_legacy_sigopcount_block(b40)
         numTxes = (MAX_BLOCK_SIGOPS - sigops) // b39_sigops_per_output
-        assert_equal(numTxes, b39_outputs)
+        assert_less_than_or_equal(numTxes, b39_outputs)
 
         lastOutpoint = COutPoint(b40.vtx[1].sha256, 0)
         new_txs = []
