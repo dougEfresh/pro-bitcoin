@@ -7,6 +7,7 @@
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import (
     assert_equal,
+    assert_greater_than,
 )
 
 def unidirectional_node_sync_via_rpc(node_src, node_dest):

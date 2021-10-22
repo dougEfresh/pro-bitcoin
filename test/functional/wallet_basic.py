@@ -11,6 +11,7 @@ from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import (
     assert_array_result,
     assert_equal,
+    assert_greater_than,
     assert_fee_amount,
     assert_raises_rpc_error,
     find_vout_for_address,
