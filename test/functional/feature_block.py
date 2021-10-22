@@ -50,7 +50,7 @@ from test_framework.script_util import (
     script_to_p2sh_script,
 )
 from test_framework.test_framework import BitcoinTestFramework
-from test_framework.util import assert_equal, assert_less_than, assert_less_than_or_equal
+from test_framework.util import assert_equal, assert_less_than
 from data import invalid_txs
 
 #  Use this class for tests that require behavior other than normal p2p behavior.
