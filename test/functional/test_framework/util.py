@@ -317,7 +317,7 @@ def get_rpc_proxy(url: str, node_number: int, *, timeout: int=None, coveragedir:
 
 
 def p2p_port(n):
-    assert_less_than_or_equal(n < MAX_NODES)
+    assert_less_than(n, MAX_NODES)
     return PORT_MIN + n + (MAX_NODES * PortSeed.n) % (PORT_RANGE - 1 - MAX_NODES)
 
 
