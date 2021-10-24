@@ -2027,6 +2027,14 @@ bool CChainState::ConnectBlock(const CBlock& block, BlockValidationState& state,
         blockMetrics.Weight(::GetBlockWeight(block));
         blockMetrics.Fees(nFees);
         blockMetrics.Reward(blockReward);
+        CAmount nValueOut{0};
+        for (auto &tx: block.vtx)
+        {
+            if (!tx->IsCoinBase()) {
+                nValueOut += tx->GetValueOut();
+            }
+        }
+        blockMetrics.ValueOut(nValueOut);
     }
     return true;
 }

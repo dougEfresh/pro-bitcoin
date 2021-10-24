@@ -30,6 +30,11 @@ fi
 
 export P_CI_DIR="$PWD"
 
+DOCKER_EXEC () {
+  $DOCKER_CI_CMD_PREFIX bash -c "export PATH=$BASE_SCRATCH_DIR/bins/:\$PATH && cd $P_CI_DIR && $*"
+}
+export -f DOCKER_EXEC
+
 if [ -z "$DANGER_RUN_CI_ON_HOST" ]; then
   echo "Creating $DOCKER_NAME_TAG container to run in"
   ${CI_RETRY_EXE} docker pull "$DOCKER_NAME_TAG"
@@ -38,7 +43,14 @@ if [ -z "$DANGER_RUN_CI_ON_HOST" ]; then
     echo "Restart docker before run to stop and clear all containers started with --rm"
     systemctl restart docker
   fi
-
+  # detect if  $CONTAINER_NAME is already running, return if so
+  DOCKER_ID=$(docker ps -q  --filter name=${CONTAINER_NAME})
+  if [ -n "$DOCKER_ID" ]; then
+    echo "Using pre-built docker image $DOCKER_ID ($CONTAINER_NAME)"
+    echo "Skipping install"
+    export DOCKER_CI_CMD_PREFIX="docker exec $DOCKER_ID"
+    return
+  fi
   DOCKER_ID=$(docker run $DOCKER_ADMIN --rm --interactive --detach --tty \
                   --mount type=bind,src=$BASE_ROOT_DIR,dst=/ro_base,readonly \
                   --mount type=bind,src=$CCACHE_DIR,dst=$CCACHE_DIR \
@@ -52,11 +64,6 @@ if [ -z "$DANGER_RUN_CI_ON_HOST" ]; then
 else
   echo "Running on host system without docker wrapper"
 fi
-
-DOCKER_EXEC () {
-  $DOCKER_CI_CMD_PREFIX bash -c "export PATH=$BASE_SCRATCH_DIR/bins/:\$PATH && cd $P_CI_DIR && $*"
-}
-export -f DOCKER_EXEC
 
 if [ -n "$DPKG_ADD_ARCH" ]; then
   DOCKER_EXEC dpkg --add-architecture "$DPKG_ADD_ARCH"
@@ -103,6 +110,13 @@ if [[ ${USE_MEMORY_SANITIZER} == "true" ]]; then
   DOCKER_EXEC "cd ${BASE_SCRATCH_DIR}/msan/build/ && cmake -DLLVM_ENABLE_PROJECTS='libcxx;libcxxabi' -DCMAKE_BUILD_TYPE=Release -DLLVM_USE_SANITIZER=Memory -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DLLVM_TARGETS_TO_BUILD=X86 ../llvm-project/llvm/"
   DOCKER_EXEC "cd ${BASE_SCRATCH_DIR}/msan/build/ && make $MAKEJOBS cxx"
 fi
+
+echo "Installing prometheus-cpp"
+# cmake latest
+DOCKER_EXEC "curl -L   https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - > /etc/apt/trusted.gpg.d/kitware.gpg && apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main' && apt-get update && apt-get install -y cmake"
+DOCKER_EXEC "/usr/bin/test -d ci/scratch/prometheus-cpp || git clone --depth 1 https://github.com/jupp0r/prometheus-cpp.git  ci/scratch/prometheus-cpp && cd ci/scratch/prometheus-cpp && git submodule init && git submodule update"
+DOCKER_EXEC "mkdir -p ci/scratch/prometheus-cpp/build ; cd ci/scratch/prometheus-cpp/build && cmake .. -DCMAKE_BUILD_TYPE=Release  -DCMAKE_INSTALL_PREFIX=/usr"
+DOCKER_EXEC "cd ci/scratch/prometheus-cpp/build && cmake --build . && make install"
 
 if [ -z "$DANGER_RUN_CI_ON_HOST" ]; then
   echo "Create $BASE_ROOT_DIR"
