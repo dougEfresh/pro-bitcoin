@@ -152,7 +152,8 @@ protected:
         "header-time",
         "fees",
         "reward",
-        "difficulty"
+        "difficulty",
+        "valueout"
     };
     std::map<const std::string, prometheus::Gauge*> _block_tip_gauge;
     std::vector<prometheus::Histogram*> _block_bucket_timers;
@@ -172,6 +173,7 @@ public:
     virtual void Reward(int64_t amt) {};
     virtual void Fees(int64_t amt) {};
     virtual void Difficulty(double amt) {};
+    virtual void ValueOut(double amt) {};
 
     virtual void TipLoadBlockDisk(int64_t current, double avg){};
     virtual void TipConnectBlock(int64_t current, double avg){};
@@ -202,6 +204,7 @@ public:
     void Reward(int64_t amt) override;
     void Fees(int64_t amt) override;
     void Difficulty(double amt) override;
+    virtual void ValueOut(double amt) override;
 
     void TipLoadBlockDisk(int64_t current, double avg) override;
     void TipConnectBlock(int64_t current, double avg) override;

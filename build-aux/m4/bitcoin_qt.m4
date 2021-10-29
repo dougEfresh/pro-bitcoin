@@ -62,7 +62,7 @@ AC_DEFUN([BITCOIN_QT_INIT],[
        bitcoin_qt_want_version=auto
      fi
     ],
-    [bitcoin_qt_want_version=no])
+    [bitcoin_qt_want_version=auto])
 
   AS_IF([test "x$with_gui" = xqt5_debug],
         [AS_CASE([$host],

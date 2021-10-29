@@ -119,6 +119,11 @@ void BlockMetricsImpl::Difficulty(double amt)
     this->set("difficulty", amt);
 }
 
+void BlockMetricsImpl::ValueOut(double amt)
+{
+    this->set("valueout", amt);
+}
+
 void BlockMetricsImpl::TipLoadBlockDisk(int64_t current, double avg)
 {
     _block_avg[P_BLK_LOAD]->Set(avg);
