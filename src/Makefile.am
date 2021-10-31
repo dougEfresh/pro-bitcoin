@@ -342,13 +342,6 @@ libbitcoin_server_a_SOURCES = \
   init.cpp \
   mapport.cpp \
   miner.cpp \
-  metrics/metrics.cpp \
-  metrics/block.cpp \
-  metrics/mempool.cpp \
-  metrics/net.cpp \
-  metrics/peer.cpp \
-  metrics/tx.cpp \
-  metrics/utxo.cpp \
   net.cpp \
   net_processing.cpp \
   node/blockstorage.cpp \
@@ -555,6 +548,13 @@ libbitcoin_common_a_SOURCES = \
   init/common.cpp \
   key.cpp \
   key_io.cpp \
+  metrics/metrics.cpp \
+  metrics/block.cpp \
+  metrics/mempool.cpp \
+  metrics/net.cpp \
+  metrics/peer.cpp \
+  metrics/tx.cpp \
+  metrics/utxo.cpp \
   merkleblock.cpp \
   netaddress.cpp \
   netbase.cpp \
@@ -695,7 +695,7 @@ bitcoin_cli_LDADD = \
   $(LIBBITCOIN_UTIL) \
   $(LIBBITCOIN_CRYPTO)
 
-bitcoin_cli_LDADD += $(BOOST_LIBS) $(EVENT_LIBS)
+bitcoin_cli_LDADD += $(BOOST_LIBS) $(EVENT_LIBS) $(PROMETHEUS_LIBS) $(ZLIB_LIBS)
 #
 
 # bitcoin-tx binary #
@@ -716,7 +716,7 @@ bitcoin_tx_LDADD = \
   $(LIBBITCOIN_CRYPTO) \
   $(LIBSECP256K1)
 
-bitcoin_tx_LDADD += $(BOOST_LIBS)
+bitcoin_tx_LDADD += $(BOOST_LIBS) $(PROMETHEUS_LIBS) $(ZLIB_LIBS)
 #
 
 # bitcoin-wallet binary #
@@ -735,7 +735,7 @@ endif
 bitcoin_util_SOURCES = bitcoin-util.cpp
 bitcoin_util_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
 bitcoin_util_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-bitcoin_util_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS) $(PTHREAD_FLAGS)
+bitcoin_util_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS) $(PTHREAD_FLAGS) $(PROMETHEUS_LIBS)
 
 if TARGET_WINDOWS
 bitcoin_util_SOURCES += bitcoin-util-res.rc
