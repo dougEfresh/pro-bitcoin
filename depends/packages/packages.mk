@@ -13,6 +13,8 @@ sqlite_packages=sqlite
 
 zmq_packages=zeromq
 
+prometheus_packages:=zlib prometheus-cpp
+
 upnp_packages=miniupnpc
 natpmp_packages=libnatpmp
 

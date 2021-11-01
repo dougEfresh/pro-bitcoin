@@ -120,3 +120,8 @@ if [ "$USE_BUSY_BOX" = "true" ]; then
   # Print BusyBox version
   DOCKER_EXEC patch --help
 fi
+
+# update cmake
+DOCKER_EXEC "curl -s --fail -L https://apt.kitware.com/keys/kitware-archive-latest.asc  | gpg --dearmor - > /etc/apt/trusted.gpg.d/kitware.gpg"
+DOCKER_EXEC "apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main'"
+DOCKER_EXEC "apt-get update && apt-get install -y cmake"
