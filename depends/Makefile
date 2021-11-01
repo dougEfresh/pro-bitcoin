@@ -32,12 +32,12 @@ SOURCES_PATH ?= $(BASEDIR)/sources
 WORK_PATH = $(BASEDIR)/work
 BASE_CACHE ?= $(BASEDIR)/built
 SDK_PATH ?= $(BASEDIR)/SDKs
-NO_QT ?=
-NO_QR ?=
+NO_QT ?= 1
+NO_QR ?= 1
 NO_BDB ?=
 NO_SQLITE ?=
 NO_WALLET ?=
-NO_ZMQ ?=
+NO_ZMQ ?= 1
 NO_UPNP ?=
 NO_NATPMP ?=
 MULTIPROCESS ?=
@@ -160,6 +160,8 @@ native_packages += $($(host_arch)_$(host_os)_native_packages) $($(host_os)_nativ
 ifneq ($(zmq_packages_),)
 packages += $(zmq_packages)
 endif
+
+packages += $(prometheus_packages)
 
 ifeq ($(multiprocess_packages_),)
 packages += $(multiprocess_packages)
