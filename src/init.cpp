@@ -1090,17 +1090,15 @@ bool AppInitMain(NodeContext& node, interfaces::BlockAndHeaderTipInfo* tip_info)
 
     // Metrics
     auto metrics_endpoint = args.GetArg("-metricsbind", chainparams.IsTestChain() ? "localhost:18335": "localhost:8335");
-    auto use_metrics = args.GetBoolArg("-metrics", true);
+    auto use_metrics = args.GetBoolArg("-metrics", false);
     if (!use_metrics) {
         LogPrintf("Using noop Metrics\n");
     }
     try {
-        node.metricsContainer = metrics::Instance();
+        metrics::Init(metrics_endpoint, chainparams.IsTestChain() ? "test": "main", !use_metrics);
     } catch(std::exception &e) {
-        LogPrintf("Metrics init error %s\n", metrics_endpoint, e.what());
-        return InitError(_("Metrics init error"));
+        return InitError(strprintf(_("Metrics init error %s %s\n"), metrics_endpoint, e.what()));
     }
-    metrics::Init(metrics_endpoint, chainparams.IsTestChain() ? "test": "main", !use_metrics);
     LogPrintf("Bound metrics endpoint to %s/metrics\n", metrics_endpoint);
     //
     InitSignatureCache();
@@ -1308,7 +1306,7 @@ bool AppInitMain(NodeContext& node, interfaces::BlockAndHeaderTipInfo* tip_info)
         LogPrintf("Using /16 prefix for IP bucketing\n");
     }
 
-    RegisterValidationInterface(node.metricsContainer->Notifier());
+    RegisterValidationInterface(metrics::Instance()->Notifier());
 #if ENABLE_ZMQ
     g_zmq_notification_interface = CZMQNotificationInterface::Create();
 
@@ -1354,7 +1352,7 @@ bool AppInitMain(NodeContext& node, interfaces::BlockAndHeaderTipInfo* tip_info)
     LogPrintf("* Using %.1f MiB for chain state database\n", nCoinDBCache * (1.0 / 1024 / 1024));
     LogPrintf("* Using %.1f MiB for in-memory UTXO set (plus up to %.1f MiB of unused mempool space)\n", nCoinCacheUsage * (1.0 / 1024 / 1024), nMempoolSizeMax * (1.0 / 1024 / 1024));
 
-    auto& configMetrics = node.metricsContainer->Config();
+    auto& configMetrics = metrics::Instance()->Config();
     configMetrics.SetFlag("alertnotify", OptionsCategory::OPTIONS, args.GetArg("-alertnotify", "") != "");
     configMetrics.SetFlag("acceptnonstdtxn", OptionsCategory::NODE_RELAY, args.GetBoolArg("-acceptnonstdtxn", !chainparams.RequireStandard()));
     std::string blockfilterindex_value = args.GetArg("-blockfilterindex", DEFAULT_BLOCKFILTERINDEX);

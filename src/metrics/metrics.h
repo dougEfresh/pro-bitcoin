@@ -404,6 +404,7 @@ protected:
     std::unique_ptr<MemPoolMetrics> _mempool_metrics;
     std::unique_ptr<ConfigMetrics> _cfg_metrics;
     std::unique_ptr<MetricsNotificationsInterface> _notifier;
+    std::atomic<bool> _init{false};
 
 public:
     Container();
