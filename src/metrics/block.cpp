@@ -27,7 +27,6 @@ BlockMetricsImpl::BlockMetricsImpl(const std::string& chain, prometheus::Registr
     auto& family = FamilyGauge("block_tip");
     auto& block_timers = FamilyHistory("block_connect");
     auto& family_block_avg = FamilyGauge("block_avg");
-    _block_tip_gauge = {};
     for (const auto& type : _block_types) {
         _block_tip_gauge.insert({type, &family.Add({{"type", type}})});
     }

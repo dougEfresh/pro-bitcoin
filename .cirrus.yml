@@ -123,8 +123,6 @@ task:
 
 task:
   name: '[depends, sanitizers: thread (TSan), no gui] [hirsute]'
-  skip: true
-  only_if: false
   << : *GLOBAL_TASK_TEMPLATE
   container:
     image: ubuntu:hirsute
@@ -137,8 +135,6 @@ task:
 
 task:
   name: '[depends, sanitizers: memory (MSan)] [focal]'
-  skip: true
-  only_if: false
   << : *GLOBAL_TASK_TEMPLATE
   container:
     image: ubuntu:focal
