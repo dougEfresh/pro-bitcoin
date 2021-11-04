@@ -1309,127 +1309,126 @@ void CConnman::NotifyNumConnectionsChanged()
     {
         LOCK(cs_vNodes);
         vNodesSize = vNodes.size();
-    }
-    if(vNodesSize != nPrevNodeCount) {
-        nPrevNodeCount = vNodesSize;
-        if(clientInterface)
-            clientInterface->NotifyNumConnectionsChanged(vNodesSize);
+        if(vNodesSize != nPrevNodeCount) {
+            nPrevNodeCount = vNodesSize;
+            if(clientInterface)
+                clientInterface->NotifyNumConnectionsChanged(vNodesSize);
+            // count various node attributes
+            uint fullNodes{0};
+            uint spvNodes{0};
+            uint inboundNodes{0};
+            uint outboundNodes{0};
+            uint ipv4Nodes{0};
+            uint ipv6Nodes{0};
+            uint torNodes{0};
+            uint i2pNodes{0};
 
-        // count various node attributes
-        uint fullNodes{0};
-        uint spvNodes{0};
-        uint inboundNodes{0};
-        uint outboundNodes{0};
-        uint ipv4Nodes{0};
-        uint ipv6Nodes{0};
-        uint torNodes{0};
-        uint i2pNodes{0};
+            uint nblockRelay{0};
+            uint nManual{0};
+            uint nFeeler{0};
+            uint nRelay{0};
+            uint nAddr{0};
+            uint nIn{0};
 
-        uint nblockRelay{0};
-        uint nManual{0};
-        uint nFeeler{0};
-        uint nRelay{0};
-        uint nAddr{0};
-        uint nIn{0};
+            uint pNone{0};
+            uint pBloom{0};
+            uint pRelay{0};
+            uint pForce{0};
+            uint pDownload{0};
+            uint pNoBan{0};
+            uint pMempool{0};
+            uint pAddr{0};
+            uint pImplicit{0};
+            uint pAll{0};
+            for (CNode* pnode : vNodes)
+            {
+                if(pnode->fClient)
+                    spvNodes++;
+                else
+                    fullNodes++;
+                if(pnode->IsInboundConn())
+                    inboundNodes++;
+                else
+                    outboundNodes++;
+                if(pnode->addr.IsIPv4())
+                    ipv4Nodes++;
+                if(pnode->addr.IsIPv6())
+                    ipv6Nodes++;
+                if(pnode->addr.IsTor())
+                    torNodes++;
+                if(pnode->addr.IsI2P())
+                    i2pNodes++;
 
-        uint pNone{0};
-        uint pBloom{0};
-        uint pRelay{0};
-        uint pForce{0};
-        uint pDownload{0};
-        uint pNoBan{0};
-        uint pMempool{0};
-        uint pAddr{0};
-        uint pImplicit{0};
-        uint pAll{0};
-        for (CNode* pnode : vNodes)
-        {
-            if(pnode->fClient)
-                spvNodes++;
-            else
-                fullNodes++;
-            if(pnode->IsInboundConn())
-                inboundNodes++;
-            else
-                outboundNodes++;
-            if(pnode->addr.IsIPv4())
-                ipv4Nodes++;
-            if(pnode->addr.IsIPv6())
-                ipv6Nodes++;
-            if(pnode->addr.IsTor())
-                torNodes++;
-            if(pnode->addr.IsI2P())
-                i2pNodes++;
+                if (pnode->HasPermission(NetPermissionFlags::All)) {
+                    pAll++;
+                } else {
+                    if (pnode->HasPermission(NetPermissionFlags::None))
+                        pNone++;
+                    if (pnode->HasPermission(NetPermissionFlags::BloomFilter))
+                        pBloom++;
+                    if (pnode->HasPermission(NetPermissionFlags::Relay))
+                        pRelay++;
+                    if (pnode->HasPermission(NetPermissionFlags::ForceRelay))
+                        pForce++;
+                    if (pnode->HasPermission(NetPermissionFlags::Download))
+                        pDownload++;
+                    if (pnode->HasPermission(NetPermissionFlags::Mempool))
+                        pMempool++;
+                    if (pnode->HasPermission(NetPermissionFlags::Addr))
+                        pAddr++;
+                    if (pnode->HasPermission(NetPermissionFlags::Implicit))
+                        pImplicit++;
+                }
 
-            if (pnode->HasPermission(NetPermissionFlags::All)) {
-                pAll++;
-            } else {
-                if (pnode->HasPermission(NetPermissionFlags::None))
-                    pNone++;
-                if (pnode->HasPermission(NetPermissionFlags::BloomFilter))
-                    pBloom++;
-                if (pnode->HasPermission(NetPermissionFlags::Relay))
-                    pRelay++;
-                if (pnode->HasPermission(NetPermissionFlags::ForceRelay))
-                    pForce++;
-                if (pnode->HasPermission(NetPermissionFlags::Download))
-                    pDownload++;
-                if (pnode->HasPermission(NetPermissionFlags::Mempool))
-                    pMempool++;
-                if (pnode->HasPermission(NetPermissionFlags::Addr))
-                    pAddr++;
-                if (pnode->HasPermission(NetPermissionFlags::Implicit))
-                    pImplicit++;
+                switch (pnode->m_conn_type) {
+                    case ConnectionType::BLOCK_RELAY:
+                        nblockRelay++;
+                        break;
+                    case ConnectionType::MANUAL:
+                        nManual++;
+                        break;
+                    case ConnectionType::FEELER:
+                        nFeeler++;
+                        break;
+                    case ConnectionType::OUTBOUND_FULL_RELAY:
+                        nRelay++;
+                        break;
+                    case ConnectionType::ADDR_FETCH:
+                        nAddr++;
+                        break;
+                    case ConnectionType::INBOUND:
+                        nIn++;
+                        break;
+                }
             }
+            netMetrics.ConnectionGauge(metrics::NetConnectionType::TOTAL, nPrevNodeCount);
+            netMetrics.ConnectionGauge(metrics::NetConnectionType::SPV, spvNodes);
+            netMetrics.ConnectionGauge(metrics::NetConnectionType::FULL, fullNodes);
+            netMetrics.ConnectionGauge(metrics::NetConnectionType::INBOUND, inboundNodes);
+            netMetrics.ConnectionGauge(metrics::NetConnectionType::OUTBOUND, outboundNodes);
+            netMetrics.ConnectionGauge(metrics::NetConnectionType::IPV4, ipv4Nodes);
+            netMetrics.ConnectionGauge(metrics::NetConnectionType::IPV6, ipv6Nodes);
+            netMetrics.ConnectionGauge(metrics::NetConnectionType::TOR, torNodes);
+            netMetrics.ConnectionGauge(metrics::NetConnectionType::I2P, i2pNodes);
 
-            switch (pnode->m_conn_type) {
-                case ConnectionType::BLOCK_RELAY:
-                    nblockRelay++;
-                    break;
-                case ConnectionType::MANUAL:
-                    nManual++;
-                    break;
-                case ConnectionType::FEELER:
-                    nFeeler++;
-                    break;
-                case ConnectionType::OUTBOUND_FULL_RELAY:
-                    nRelay++;
-                    break;
-                case ConnectionType::ADDR_FETCH:
-                    nAddr++;
-                    break;
-                case ConnectionType::INBOUND:
-                    nIn++;
-                    break;
-            }
+            peerMetrics.Permission(NetPermissionFlags::All, pAll);
+            peerMetrics.Permission(NetPermissionFlags::Implicit, pImplicit);
+            peerMetrics.Permission(NetPermissionFlags::Addr, pAddr);
+            peerMetrics.Permission(NetPermissionFlags::Mempool, pMempool);
+            peerMetrics.Permission(NetPermissionFlags::NoBan, pNoBan);
+            peerMetrics.Permission(NetPermissionFlags::Download, pDownload);
+            peerMetrics.Permission(NetPermissionFlags::ForceRelay, pForce);
+            peerMetrics.Permission(NetPermissionFlags::Relay, pRelay);
+            peerMetrics.Permission(NetPermissionFlags::BloomFilter, pBloom);
+            peerMetrics.Permission(NetPermissionFlags::None, pNone);
+
+            peerMetrics.ConnectionType(static_cast<int>(ConnectionType::ADDR_FETCH), nAddr);
+            peerMetrics.ConnectionType(static_cast<int>(ConnectionType::BLOCK_RELAY), nblockRelay);
+            peerMetrics.ConnectionType(static_cast<int>(ConnectionType::FEELER), nFeeler);
+            peerMetrics.ConnectionType(static_cast<int>(ConnectionType::INBOUND), nIn);
+            peerMetrics.ConnectionType(static_cast<int>(ConnectionType::MANUAL), nManual);
+            peerMetrics.ConnectionType(static_cast<int>(ConnectionType::OUTBOUND_FULL_RELAY), nRelay);
         }
-        netMetrics.ConnectionGauge(metrics::NetConnectionType::TOTAL, nPrevNodeCount);
-        netMetrics.ConnectionGauge(metrics::NetConnectionType::SPV, spvNodes);
-        netMetrics.ConnectionGauge(metrics::NetConnectionType::FULL, fullNodes);
-        netMetrics.ConnectionGauge(metrics::NetConnectionType::INBOUND, inboundNodes);
-        netMetrics.ConnectionGauge(metrics::NetConnectionType::OUTBOUND, outboundNodes);
-        netMetrics.ConnectionGauge(metrics::NetConnectionType::IPV4, ipv4Nodes);
-        netMetrics.ConnectionGauge(metrics::NetConnectionType::IPV6, ipv6Nodes);
-        netMetrics.ConnectionGauge(metrics::NetConnectionType::TOR, torNodes);
-        netMetrics.ConnectionGauge(metrics::NetConnectionType::I2P, i2pNodes);
-
-        peerMetrics.Permission(NetPermissionFlags::All, pAll);
-        peerMetrics.Permission(NetPermissionFlags::Implicit, pImplicit);
-        peerMetrics.Permission(NetPermissionFlags::Addr, pAddr);
-        peerMetrics.Permission(NetPermissionFlags::Mempool, pMempool);
-        peerMetrics.Permission(NetPermissionFlags::NoBan, pNoBan);
-        peerMetrics.Permission(NetPermissionFlags::Download, pDownload);
-        peerMetrics.Permission(NetPermissionFlags::ForceRelay, pForce);
-        peerMetrics.Permission(NetPermissionFlags::Relay, pRelay);
-        peerMetrics.Permission(NetPermissionFlags::BloomFilter, pBloom);
-        peerMetrics.Permission(NetPermissionFlags::None, pNone);
-
-        peerMetrics.ConnectionType(static_cast<int>(ConnectionType::ADDR_FETCH), nAddr);
-        peerMetrics.ConnectionType(static_cast<int>(ConnectionType::BLOCK_RELAY), nblockRelay);
-        peerMetrics.ConnectionType(static_cast<int>(ConnectionType::FEELER), nFeeler);
-        peerMetrics.ConnectionType(static_cast<int>(ConnectionType::INBOUND), nIn);
-        peerMetrics.ConnectionType(static_cast<int>(ConnectionType::MANUAL), nManual);
-        peerMetrics.ConnectionType(static_cast<int>(ConnectionType::OUTBOUND_FULL_RELAY), nRelay);
     }
 }
 

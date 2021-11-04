@@ -35,7 +35,7 @@ global_task_template: &GLOBAL_TASK_TEMPLATE
   container:
     # https://cirrus-ci.org/faq/#are-there-any-limits
     # Each project has 16 CPU in total, assign 2 to each container, so that 8 tasks run in parallel
-    cpu: 2
+    cpu: 4
     memory: 8G  # Set to 8GB to avoid OOM. https://cirrus-ci.org/guide/linux/#linux-containers
   ccache_cache:
     folder: "/tmp/ccache_dir"
@@ -121,26 +121,30 @@ compute_credits_template: &CREDITS_TEMPLATE
 #     << : *PERSISTENT_WORKER_TEMPLATE_ENV
 #     FILE_ENV: "./ci/test/00_setup_env_native_qt5.sh"
 
-# task:
-#   name: '[depends, sanitizers: thread (TSan), no gui] [hirsute]'
-#   << : *GLOBAL_TASK_TEMPLATE
-#   container:
-#     image: ubuntu:hirsute
-#     cpu: 6  # Increase CPU and Memory to avoid timeout
-#     memory: 24G
-#   env:
-#     << : *CIRRUS_EPHEMERAL_WORKER_TEMPLATE_ENV
-#     MAKEJOBS: "-j8"
-#     FILE_ENV: "./ci/test/00_setup_env_native_tsan.sh"
+task:
+  name: '[depends, sanitizers: thread (TSan), no gui] [hirsute]'
+  skip: true
+  only_if: false
+  << : *GLOBAL_TASK_TEMPLATE
+  container:
+    image: ubuntu:hirsute
+    cpu: 6  # Increase CPU and Memory to avoid timeout
+    memory: 24G
+  env:
+    << : *CIRRUS_EPHEMERAL_WORKER_TEMPLATE_ENV
+    MAKEJOBS: "-j8"
+    FILE_ENV: "./ci/test/00_setup_env_native_tsan.sh"
 
-# task:
-#   name: '[depends, sanitizers: memory (MSan)] [focal]'
-#   << : *GLOBAL_TASK_TEMPLATE
-#   container:
-#     image: ubuntu:focal
-#   env:
-#     << : *CIRRUS_EPHEMERAL_WORKER_TEMPLATE_ENV
-#     FILE_ENV: "./ci/test/00_setup_env_native_msan.sh"
+task:
+  name: '[depends, sanitizers: memory (MSan)] [focal]'
+  skip: true
+  only_if: false
+  << : *GLOBAL_TASK_TEMPLATE
+  container:
+    image: ubuntu:focal
+  env:
+    << : *CIRRUS_EPHEMERAL_WORKER_TEMPLATE_ENV
+    FILE_ENV: "./ci/test/00_setup_env_native_msan.sh"
 
 # task:
 #   name: '[no depends, sanitizers: address/leak (ASan + LSan) + undefined (UBSan) + integer] [hirsute]'
@@ -151,18 +155,20 @@ compute_credits_template: &CREDITS_TEMPLATE
 #     << : *CIRRUS_EPHEMERAL_WORKER_TEMPLATE_ENV
 #     FILE_ENV: "./ci/test/00_setup_env_native_asan.sh"
 
-# task:
-#   name: '[no depends, sanitizers: fuzzer,address,undefined,integer] [focal]'
-#   only_if: $CIRRUS_BRANCH == $CIRRUS_DEFAULT_BRANCH || $CIRRUS_BASE_BRANCH == $CIRRUS_DEFAULT_BRANCH
-#   << : *GLOBAL_TASK_TEMPLATE
-#   container:
-#     image: ubuntu:focal
-#     cpu: 4  # Increase CPU and memory to avoid timeout
-#     memory: 16G
-#   env:
-#     << : *CIRRUS_EPHEMERAL_WORKER_TEMPLATE_ENV
-#     MAKEJOBS: "-j8"
-#     FILE_ENV: "./ci/test/00_setup_env_native_fuzz.sh"
+task:
+  name: '[no depends, sanitizers: fuzzer,address,undefined,integer] [focal]'
+# only_if: $CIRRUS_BRANCH == $CIRRUS_DEFAULT_BRANCH || $CIRRUS_BASE_BRANCH == $CIRRUS_DEFAULT_BRANCH
+  skip: true
+  only_if: false
+  << : *GLOBAL_TASK_TEMPLATE
+  container:
+    image: ubuntu:focal
+    cpu: 4  # Increase CPU and memory to avoid timeout
+    memory: 16G
+  env:
+    << : *CIRRUS_EPHEMERAL_WORKER_TEMPLATE_ENV
+    MAKEJOBS: "-j8"
+    FILE_ENV: "./ci/test/00_setup_env_native_fuzz.sh"
 
 # task:
 #   name: '[multiprocess, DEBUG] [focal]'

@@ -37,7 +37,7 @@
 #include <validation.h>
 #include <validationinterface.h>
 #include <walletinitinterface.h>
-
+#include <metrics/metrics.h>
 #include <functional>
 
 const std::function<std::string(const char*)> G_TRANSLATION_FUN = nullptr;
@@ -76,6 +76,7 @@ BasicTestingSetup::BasicTestingSetup(const std::string& chainName, const std::ve
     : m_path_root{fs::temp_directory_path() / "test_common_" PACKAGE_NAME / g_insecure_rand_ctx_temp_path.rand256().ToString()},
       m_args{}
 {
+    metrics::Init("", "test", true);
     m_node.args = &gArgs;
     const std::vector<const char*> arguments = Cat(
         {
@@ -179,7 +180,6 @@ TestingSetup::TestingSetup(const std::string& chainName, const std::vector<const
     // Ideally we'd move all the RPC tests to the functional testing framework
     // instead of unit tests, but for now we need these here.
     RegisterAllCoreRPCCommands(tableRPC);
-
     m_node.chainman->InitializeChainstate(m_node.mempool.get());
     m_node.chainman->ActiveChainstate().InitCoinsDB(
         /* cache_size_bytes */ 1 << 23, /* in_memory */ true, /* should_wipe */ false);

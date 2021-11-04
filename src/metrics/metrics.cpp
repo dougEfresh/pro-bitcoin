@@ -115,6 +115,10 @@ std::unique_ptr<MetricsNotificationsInterface> _notifier;
 
 void Container::Init(const std::string& chain, bool noop)
 {
+    if (_init.exchange(true)) {
+        return;
+    }
+
     _peerMetrics = PeerMetrics::make(chain, *prom_registry, noop);
     _netMetrics = NetMetrics::make(chain, *prom_registry, noop);
     _txMetrics = TxMetrics::make(chain, *prom_registry, noop);
@@ -127,8 +131,10 @@ void Container::Init(const std::string& chain, bool noop)
 
 void Init(const std::string& bind, const std::string& chain, bool noop)
 {
-    exposer = std::make_shared<prometheus::Exposer>(bind);
-    exposer->RegisterCollectable(prom_registry);
+    if (!noop) {
+        exposer = std::make_shared<prometheus::Exposer>(bind);
+        exposer->RegisterCollectable(prom_registry);
+    }
     Instance()->Init(chain, noop);
 }
 
