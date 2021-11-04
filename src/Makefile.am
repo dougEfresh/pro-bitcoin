@@ -176,6 +176,7 @@ BITCOIN_CORE_H = \
   memusage.h \
   merkleblock.h \
   metrics/metrics.h \
+  metrics_notifications_interface.h \
   miner.h \
   net.h \
   net_permissions.h \
@@ -555,6 +556,7 @@ libbitcoin_common_a_SOURCES = \
   metrics/peer.cpp \
   metrics/tx.cpp \
   metrics/utxo.cpp \
+  metrics_notifications_interface.cpp \
   merkleblock.cpp \
   netaddress.cpp \
   netbase.cpp \
