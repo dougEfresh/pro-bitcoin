@@ -1,10 +1,10 @@
+#include <metrics/metrics.h>
+
 #include <future>
 #include <logging.h>
 #include <memory>
-#include <metrics/metrics.h>
 #include <protocol.h>
 #include <utility>
-#include <rpc/blockchain.h>
 
 namespace metrics {
 using namespace prometheus;
@@ -107,11 +107,6 @@ ConfigMetrics& Container::Config()
     assert(this->_cfg_metrics);
     return *this->_cfg_metrics;
 }
-MetricsNotificationsInterface* Container::Notifier()
-{
-    return _notifier.get();
-}
-std::unique_ptr<MetricsNotificationsInterface> _notifier;
 
 void Container::Init(const std::string& chain, bool noop)
 {
@@ -126,7 +121,6 @@ void Container::Init(const std::string& chain, bool noop)
     //_utxo_metrics =  std::make_unique<UtxoMetrics>(chain, *prom_registry);
     _mempool_metrics = MemPoolMetrics::make(chain, *prom_registry, noop);
     _cfg_metrics = std::make_unique<ConfigMetrics>(chain, *prom_registry);
-    _notifier = std::make_unique<MetricsNotificationsInterface>(*_blocks_metrics, *_mempool_metrics);
 }
 
 void Init(const std::string& bind, const std::string& chain, bool noop)
@@ -153,33 +147,5 @@ std::string BlockTimerOp::name() const
 prometheus::Histogram::BucketBoundaries BlockTimerOp::buckets() const
 {
     return _buckets;
-}
-
-MetricsNotificationsInterface::MetricsNotificationsInterface(BlockMetrics& blockMetrics, MemPoolMetrics& mempoolMetrics) : _blockMetrics(blockMetrics), _memPoolMetrics(mempoolMetrics) {}
-
-void MetricsNotificationsInterface::UpdatedBlockTip(const CBlockIndex* pindexNew, const CBlockIndex* pindexFork, bool fInitialDownload)
-{
-    if (fInitialDownload || pindexNew == pindexFork) {
-        return;
-    }
-    _blockMetrics.Transactions(pindexNew->nTx);
-    _blockMetrics.Height(pindexNew->nHeight);
-    _blockMetrics.HeaderTime(pindexNew->GetBlockHeader().GetBlockTime());
-    _blockMetrics.Version(pindexNew->nVersion);
-    //_blockMetrics.Difficulty(GetDifficulty(pindexNew));
-}
-
-void MetricsNotificationsInterface::TransactionAddedToMempool(const CTransactionRef& tx, uint64_t mempool_sequence)
-{
-    if (tx->IsNull()) {
-        return;
-    }
-    _memPoolMetrics.Incoming(tx->vin.size(), tx->vout.size(), tx->GetTotalSize(), tx->GetValueOut());
-}
-
-void MetricsNotificationsInterface::TransactionRemovedFromMempool(const CTransactionRef& tx, MemPoolRemovalReason reason,
-                                                                  uint64_t mempool_sequence)
-{
-    _memPoolMetrics.Removed(reason);
 }
 } // namespace metrics

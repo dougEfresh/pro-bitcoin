@@ -1,5 +1,5 @@
-#ifndef METRICS_CLIENT_H
-#define METRICS_CLIENT_H
+#ifndef BITCOIN_METRICS_METRICS_H
+#define BITCOIN_METRICS_METRICS_H
 #include <chain.h>
 #include <prometheus/counter.h>
 #include <prometheus/exposer.h>
@@ -7,10 +7,9 @@
 #include <prometheus/histogram.h>
 #include <prometheus/registry.h>
 #include <prometheus/summary.h>
-#include <validationinterface.h>
+
 #include <net_permissions.h>
 #include <util/system.h>
-#include <txmempool.h>
 
 namespace metrics {
 static auto prom_registry = std::make_shared<prometheus::Registry>(); // NOLINT(cert-err58-cpp)
@@ -351,7 +350,8 @@ protected:
     prometheus::Counter* _vout_incoming_counter;
     prometheus::Counter* _incoming_size_counter;
     prometheus::Counter* _incoming_amt_counter;
-    std::map<MemPoolRemovalReason, prometheus::Counter*> _removed_counter;
+    std::vector<prometheus::Counter*> _removed_counter;
+    prometheus::Counter* _removed_unknown_counter;
     prometheus::Gauge* _orphan_size_gauge;
     prometheus::Gauge* _orphan_outpoint_gauge;
 
@@ -360,7 +360,7 @@ public:
     virtual void AcceptTime(long amt){};
     virtual void Transactions(MemPoolType type, long amt){};
     virtual void Incoming(size_t in, size_t out, unsigned int byte_size, int64_t amt){};
-    virtual void Removed(MemPoolRemovalReason reason){};
+    virtual void Removed(size_t reason){};
     virtual void Orphans(size_t map, size_t outpoint){};
 };
 class MemPoolMetricsImpl : MemPoolMetrics, Metrics
@@ -371,28 +371,10 @@ public:
     void AcceptTime(long amt) override;
     void Transactions(MemPoolType type, long amt) override;
     void Incoming(size_t in, size_t out, unsigned int byte_size, int64_t amt) override;
-    void Removed(MemPoolRemovalReason reason) override;
+    void Removed(size_t reason) override;
     void Orphans(size_t map, size_t outpoint) override;
 };
 
-class MetricsNotificationsInterface final : public CValidationInterface
-{
-public:
-    explicit MetricsNotificationsInterface(BlockMetrics& blockMetrics, MemPoolMetrics& mempoolMetrics);
-
-protected:
-    void UpdatedBlockTip(const CBlockIndex* pindexNew, const CBlockIndex* pindexFork, bool fInitialDownload) override;
-    void TransactionAddedToMempool(const CTransactionRef& tx, uint64_t mempool_sequence) override;
-    void TransactionRemovedFromMempool(const CTransactionRef& tx, MemPoolRemovalReason reason, uint64_t mempool_sequence) override;
-    void BlockConnected(const std::shared_ptr<const CBlock>& block, const CBlockIndex* pindex) override{};
-    void BlockDisconnected(const std::shared_ptr<const CBlock>& block, const CBlockIndex* pindex) override{};
-    void ChainStateFlushed(const CBlockLocator& locator) override{};
-    void BlockChecked(const CBlock& block, const BlockValidationState& state) override{};
-
-private:
-    BlockMetrics& _blockMetrics;
-    MemPoolMetrics& _memPoolMetrics;
-};
 class Container
 {
 protected:
@@ -403,7 +385,6 @@ protected:
     //std::unique_ptr<UtxoMetrics> _utxo_metrics;
     std::unique_ptr<MemPoolMetrics> _mempool_metrics;
     std::unique_ptr<ConfigMetrics> _cfg_metrics;
-    std::unique_ptr<MetricsNotificationsInterface> _notifier;
     std::atomic<bool> _init{false};
 
 public:
@@ -420,7 +401,6 @@ public:
     //UtxoMetrics& Utxo();
     MemPoolMetrics& MemPool();
     ConfigMetrics& Config();
-    MetricsNotificationsInterface* Notifier();
 };
 
 

@@ -74,6 +74,7 @@
 #include <thread>
 #include <vector>
 #include <metrics/metrics.h>
+#include <metrics_notifications_interface.h>
 
 #ifndef WIN32
 #include <attributes.h>
@@ -1306,9 +1307,9 @@ bool AppInitMain(NodeContext& node, interfaces::BlockAndHeaderTipInfo* tip_info)
         LogPrintf("Using /16 prefix for IP bucketing\n");
     }
 
-    RegisterValidationInterface(metrics::Instance()->Notifier());
+    RegisterValidationInterface(new metrics::MetricsNotificationsInterface(metrics::Instance()->Block(), metrics::Instance()->MemPool()));
 #if ENABLE_ZMQ
-    g_zmq_notification_interface = CZMQNotificationInterface::Create();
+    mg_zmq_notification_interface = CZMQNotificationInterface::Create();
 
     if (g_zmq_notification_interface) {
         RegisterValidationInterface(g_zmq_notification_interface);

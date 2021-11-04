@@ -33,17 +33,13 @@ MemPoolMetricsImpl::MemPoolMetricsImpl(const std::string& chain, prometheus::Reg
     _incoming_amt_counter = &incoming_family.Add({{"type", "amount"}});
 
     _removed_counter = {
-        {MemPoolRemovalReason:: EXPIRY, &incoming_family.Add({{"type", "removed"},
-                              {"reason", "expiry"}})},
-        {MemPoolRemovalReason:: SIZELIMIT, &incoming_family.Add({{"type", "removed"},
-                              {"reason", "size-limit"}})},
-        {MemPoolRemovalReason:: REORG, &incoming_family.Add({{"type", "removed"},
-                              {"reason", "reorg"}})},
-        {MemPoolRemovalReason::CONFLICT, &incoming_family.Add({{"type", "removed"},
-                              {"reason", "conflict"}})},
-        {MemPoolRemovalReason:: REPLACED,&incoming_family.Add({{"type", "removed"},
-                              {"reason", "replaced"}})},
+        &incoming_family.Add({{"type", "removed"}, {"reason", "expiry"}}),
+        &incoming_family.Add({{"type", "removed"}, {"reason", "size-limit"}}),
+        &incoming_family.Add({{"type", "removed"}, {"reason", "reorg"}}),
+        &incoming_family.Add({{"type", "removed"}, {"reason", "conflict"}}),
+        &incoming_family.Add({{"type", "removed"}, {"reason", "replaced"}}),
     };
+    _removed_unknown_counter = &incoming_family.Add({{"type", "removed"}, {"reason", "unknown"}});
     auto orphan_fmaily = &FamilyGauge("mempool_orphans", {{"method", "TxOrphanage::AddTx"}});
     _orphan_size_gauge = &orphan_fmaily->Add({{"type", "size"}});
     _orphan_outpoint_gauge = &orphan_fmaily->Add({{"type", "outpoint"}});
@@ -65,13 +61,13 @@ void MemPoolMetricsImpl::Incoming(size_t in, size_t out, unsigned int byte_size,
     _incoming_amt_counter->Increment((double)amt);
 }
 
-void MemPoolMetricsImpl::Removed(MemPoolRemovalReason reason)
+void MemPoolMetricsImpl::Removed(size_t reason)
 {
-    auto found = _removed_counter.find(reason);
-    if (found == this->_removed_counter.end()) {
+    if (reason > _removed_counter.size()) {
+        _removed_unknown_counter->Increment();
         return;
     }
-    found->second->Increment();
+    _removed_counter[reason-1]->Increment();
 }
 
 void MemPoolMetricsImpl::Orphans(size_t map, size_t outpoint)
