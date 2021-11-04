@@ -69,19 +69,19 @@ compute_credits_template: &CREDITS_TEMPLATE
 #  install_script:
 #    - choco install python --version=3.7.7 -y
 
-# task:
-#   name: 'lint [bionic]'
-#   << : *BASE_TEMPLATE
-#   container:
-#     image: ubuntu:bionic  # For python 3.6, oldest supported version according to doc/dependencies.md
-#     cpu: 1
-#     memory: 1G
-#   # For faster CI feedback, immediately schedule the linters
-#   << : *CREDITS_TEMPLATE
-#   lint_script:
-#     - ./ci/lint_run_all.sh
-#   env:
-#     << : *CIRRUS_EPHEMERAL_WORKER_TEMPLATE_ENV
+task:
+  name: 'lint [bionic]'
+  << : *BASE_TEMPLATE
+  container:
+    image: ubuntu:bionic  # For python 3.6, oldest supported version according to doc/dependencies.md
+    cpu: 1
+    memory: 1G
+  # For faster CI feedback, immediately schedule the linters
+  << : *CREDITS_TEMPLATE
+  lint_script:
+    - ./ci/lint_run_all.sh
+  env:
+    << : *CIRRUS_EPHEMERAL_WORKER_TEMPLATE_ENV
 
 # task:
 #   name: 'ARM [unit tests, no functional tests] [buster]'
