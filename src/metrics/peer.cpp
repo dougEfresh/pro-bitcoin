@@ -31,8 +31,6 @@ PeerMetricsImpl::PeerMetricsImpl(const std::string& chain, prometheus::Registry&
         &txValidationFamily.Add({{"result", "witness_stripped"}}),
         &txValidationFamily.Add({{"result", "witness_stripped"}}),
         &txValidationFamily.Add({{"result", "conflict"}})};
-    _process_msg_timer = {};
-    _push_msg_counter = {};
     auto buckets = prometheus::Histogram::BucketBoundaries{
         5000,
         10000,

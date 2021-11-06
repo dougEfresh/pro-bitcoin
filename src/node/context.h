@@ -9,7 +9,6 @@
 #include <functional>
 #include <memory>
 #include <vector>
-#include <metrics/metrics.h>
 
 class ArgsManager;
 class BanMan;
@@ -56,7 +55,6 @@ struct NodeContext {
     interfaces::WalletClient* wallet_client{nullptr};
     std::unique_ptr<CScheduler> scheduler;
     std::function<void()> rpc_interruption_point = [] {};
-    metrics::Container* metricsContainer;
 
     //! Declare default constructor and destructor that are not inline, so code
     //! instantiating the NodeContext struct doesn't need to #include class

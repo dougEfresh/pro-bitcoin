@@ -10,7 +10,7 @@
 #include <util/system.h>
 #include <util/time.h>
 #include <util/translation.h>
-#include <metrics/metrics.h>
+#include <metrics/container.h>
 
 static const auto& metricsContainer = metrics::Instance();
 

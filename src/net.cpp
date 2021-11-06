@@ -50,7 +50,7 @@
 
 #include <math.h>
 
-#include <metrics/metrics.h>
+#include <metrics/container.h>
 
 /** Maximum number of block-relay-only anchor connections */
 static constexpr size_t MAX_BLOCK_RELAY_ONLY_ANCHORS = 2;

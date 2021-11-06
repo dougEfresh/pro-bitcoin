@@ -37,7 +37,6 @@ TxMetricsImpl::TxMetricsImpl(const std::string& chain, prometheus::Registry& reg
         "non-BIP68-final", "bad-txns-nonstandard-inputs", "bad-witness-nonstandard", "bad-txns-too-many-sigops",
         "too-long-mempool-chain", "bad-txns-spends-conflicting-tx", "insufficient-fee", "too-many-potential-replacements",
         "replacement-adds-unconfirmed", "unknown"};
-    _single_transaction_counter = {};
     for (const auto& item : reasons) {
         _single_transaction_counter.insert({item, &single_transaction_family.Add({{"result", "rejected"}, {"reason", item}})});
     }

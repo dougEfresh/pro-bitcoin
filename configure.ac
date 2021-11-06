@@ -1317,7 +1317,6 @@ fi
 
 
 PKG_CHECK_MODULES([PROMETHEUS], [prometheus-cpp-core >= 0.12.0, prometheus-cpp-pull >= 0.12.0], [use_prometheus=yes], [AC_MSG_ERROR([libprometheus-cpp-core version 0.12.0 or greater not found.])])
-PKG_CHECK_MODULES([ZLIB], [zlib], [use_prometheus=yes], [AC_MSG_ERROR([libz (zlib) not found.])])
 
 if test x$enable_wallet != xno; then
     dnl Check for libdb_cxx only if wallet enabled
@@ -1847,7 +1846,6 @@ AC_SUBST(USE_QRCODE)
 AC_SUBST(BOOST_LIBS)
 AC_SUBST(SQLITE_LIBS)
 AC_SUBST(PROMETHEUS_LIBS)
-AC_SUBST(ZLIB_LIBS)
 AC_SUBST(TESTDEFS)
 AC_SUBST(MINIUPNPC_CPPFLAGS)
 AC_SUBST(MINIUPNPC_LIBS)

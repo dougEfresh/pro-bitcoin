@@ -13,6 +13,7 @@
 #include <crypto/sha256.h>
 #include <init.h>
 #include <interfaces/chain.h>
+#include <metrics/container.h>
 #include <miner.h>
 #include <net.h>
 #include <net_processing.h>
@@ -37,7 +38,6 @@
 #include <validation.h>
 #include <validationinterface.h>
 #include <walletinitinterface.h>
-#include <metrics/metrics.h>
 #include <functional>
 
 const std::function<std::string(const char*)> G_TRANSLATION_FUN = nullptr;

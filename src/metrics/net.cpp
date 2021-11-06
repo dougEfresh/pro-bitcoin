@@ -35,11 +35,10 @@ NetMetricsImpl::NetMetricsImpl(const std::string& chain, prometheus::Registry& r
         {NetConnectionType::SPV, &family_gauge.Add({{"type", "spv"}})},
     };
     auto& family_connection_counter = FamilyCounter("net_socket");
-    _connection_counter = {
-        {"open", &family_connection_counter.Add({{"type", "open"}})},
-        {"accept", &family_connection_counter.Add({{"type", "accept"}})},
-        {"close", &family_connection_counter.Add({{"type", "close"}})},
-    };
+    _connection_counter.insert({"open", &family_connection_counter.Add({{"type", "open"}})});
+    _connection_counter.insert({"accept", &family_connection_counter.Add({{"type", "accept"}})});
+    _connection_counter.insert({"close", &family_connection_counter.Add({{"type", "close"}})});
+
     auto& maxFamily = FamilyGauge("net_max_outbound");
     _max_outbound_gauge = &maxFamily.Add({{"type", "bytes"}});
     _max_outbound_start_gauge = &maxFamily.Add({{"type", "epoch"}});
@@ -50,8 +49,6 @@ NetMetricsImpl::NetMetricsImpl(const std::string& chain, prometheus::Registry& r
 void NetMetricsImpl::initBandwidth()
 {
     auto& family = FamilyGauge("net_bandwidth");
-    _bandwidth_gauge_tx = {};
-    _bandwidth_gauge_rx = {};
     for (const std::string& msg : getAllNetMessageTypes()) {
         _bandwidth_gauge_rx.insert({msg, &family.Add({{"type", msg}, {"direction", "rx"}})});
         _bandwidth_gauge_tx.insert({msg, &family.Add({{"type", msg}, {"direction", "tx"}})});

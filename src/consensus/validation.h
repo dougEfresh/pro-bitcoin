@@ -11,7 +11,7 @@
 #include <consensus/consensus.h>
 #include <primitives/transaction.h>
 #include <primitives/block.h>
-#include <metrics/metrics.h>
+#include <metrics/container.h>
 
 /** Index marker for when no witness commitment is present in a coinbase transaction. */
 static constexpr int NO_WITNESS_COMMITMENT{-1};
