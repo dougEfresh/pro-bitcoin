@@ -58,3 +58,6 @@ fi
 if [ -n "$PREVIOUS_RELEASES_TO_DOWNLOAD" ]; then
   DOCKER_EXEC test/get_previous_releases.py -b -t "$PREVIOUS_RELEASES_DIR" "${PREVIOUS_RELEASES_TO_DOWNLOAD}"
 fi
+
+# remove config.cache since we mount ci/scratch into the container
+DOCKER_EXEC "rm -f ${BASE_SCRATCH_DIR}/build/config.cache"
