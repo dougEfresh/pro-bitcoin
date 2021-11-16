@@ -380,7 +380,7 @@ univalue_test_object_LDFLAGS = -static $(LIBTOOL_APP_LDFLAGS)
 endif
 
 junit-tests:
-	[ -n "$(JUNIT)" ] && $(TEST_BINARY) --catch_system_errors=no --log_format=JUNIT > $(TEST_BINARY).xml || (cat $(TEST_BINARY).xml && false)
+	[ -n "$(JUNIT)" ] && $(TEST_BINARY) --catch_system_errors=no --log_level=warning --log_format=JUNIT > $(TEST_BINARY).xml || (cat $(TEST_BINARY).xml && false)
 
 %.cpp.test: %.cpp
 	$(AM_V_at)if [ -z "$(JUNIT)" ] ; then \
