@@ -52,7 +52,7 @@ global_task_template: &GLOBAL_TASK_TEMPLATE
   << : *MAIN_TEMPLATE
   always:
     junit_result_artifacts:
-      path: "ci/scratch/**.xml"
+      path: "**ci/scratch/build/**/test_bitcoin.xml"
       format: junit
       type: text/xml
 
@@ -82,6 +82,7 @@ task:
 
 task:
   name: "Win64 native [msvc]"
+  only_if: false
   << : *FILTER_TEMPLATE
   windows_container:
     cpu: 4
