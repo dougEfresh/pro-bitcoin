@@ -20,6 +20,7 @@
 
 #include <type_traits>
 #include <vector>
+#include <filesystem>
 
 /** This is connected to the logger. Can be used to redirect logs to any other log */
 extern const std::function<void(const std::string&)> G_TEST_LOG_FUN;
@@ -80,7 +81,7 @@ struct BasicTestingSetup {
     explicit BasicTestingSetup(const std::string& chainName = CBaseChainParams::MAIN, const std::vector<const char*>& extra_args = {});
     ~BasicTestingSetup();
 
-    const fs::path m_path_root;
+    const std::filesystem::path m_path_root;
     ArgsManager m_args;
 };
 
